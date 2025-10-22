@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "./_core/trpc";
 import * as db from "./db-modules";
+import { migratePlatforms } from "./migrate-platforms";
 
 export const modulesRouter = router({
   // ===== MODULES =====
@@ -131,6 +132,12 @@ export const modulesRouter = router({
       return { success: true };
     }),
 
+  migratePlatforms: protectedProcedure
+    .mutation(async ({ ctx }) => {
+      const result = await migratePlatforms(ctx.user.id);
+      return result;
+    }),
+
   reorderFields: protectedProcedure
     .input(z.object({
       updates: z.array(z.object({
@@ -190,6 +197,12 @@ export const modulesRouter = router({
   // ===== MODULE RECORDS =====
 
   getRecords: protectedProcedure
+    .input(z.object({ moduleId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      return await db.getModuleRecords(input.moduleId, ctx.user.id);
+    }),
+
+  listRecords: protectedProcedure
     .input(z.object({ moduleId: z.number() }))
     .query(async ({ ctx, input }) => {
       return await db.getModuleRecords(input.moduleId, ctx.user.id);

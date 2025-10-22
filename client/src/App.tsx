@@ -5,7 +5,7 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Dashboard from "./pages/Dashboard";
-import Platforms from "./pages/Platforms";
+import PlatformsDynamic from "./pages/PlatformsDynamic";
 import Settings from "./pages/Settings";
 import ModuleBuilder from "./pages/ModuleBuilder";
 import FormDesigner from "./pages/FormDesigner";
@@ -16,7 +16,7 @@ function Router() {
     <DashboardLayout>
       <Switch>
         <Route path="/" component={Dashboard} />
-        <Route path="/platforms" component={Platforms} />
+        <Route path="/platforms" component={PlatformsDynamic} />
         <Route path="/settings" component={Settings} />
         <Route path="/module-builder" component={ModuleBuilder} />
         <Route path="/module-builder/:id/design" component={FormDesigner} />

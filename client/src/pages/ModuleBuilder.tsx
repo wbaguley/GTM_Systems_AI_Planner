@@ -1,79 +1,45 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
-import { Plus, Settings, Trash2, Eye } from "lucide-react";
-import { useState } from "react";
-import { Link } from "wouter";
-import { toast } from "sonner";
+import { Settings, ArrowRight } from "lucide-react";
+import { useEffect } from "react";
+import { Link, useLocation } from "wouter";
 
 export default function ModuleBuilder() {
   const { isAuthenticated, loading } = useAuth();
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [newModule, setNewModule] = useState({
-    name: "",
-    singularName: "",
-    pluralName: "",
-    icon: "",
-    description: "",
-  });
+  const [, setLocation] = useLocation();
 
-  const { data: modules = [], refetch } = trpc.modules.list.useQuery(undefined, {
+  const { data: modules = [] } = trpc.modules.list.useQuery(undefined, {
     enabled: isAuthenticated,
   });
 
-  const createMutation = trpc.modules.create.useMutation({
-    onSuccess: () => {
-      toast.success("Module created successfully");
-      refetch();
-      setCreateDialogOpen(false);
-      setNewModule({
-        name: "",
-        singularName: "",
-        pluralName: "",
-        icon: "",
-        description: "",
-      });
-    },
-    onError: (error) => {
-      toast.error(`Failed to create module: ${error.message}`);
-    },
-  });
+  const createMutation = trpc.modules.create.useMutation();
+  const migrateMutation = trpc.modules.migratePlatforms.useMutation();
 
-  const deleteMutation = trpc.modules.delete.useMutation({
-    onSuccess: () => {
-      toast.success("Module deleted successfully");
-      refetch();
-    },
-    onError: (error) => {
-      toast.error(`Failed to delete module: ${error.message}`);
-    },
-  });
-
-  const handleCreate = () => {
-    if (!newModule.name || !newModule.singularName || !newModule.pluralName) {
-      toast.error("Please fill in all required fields");
-      return;
+  // Auto-run migration if no modules exist
+  useEffect(() => {
+    if (isAuthenticated && modules.length === 0 && !migrateMutation.isPending && !createMutation.isPending) {
+      migrateMutation.mutate();
     }
-    createMutation.mutate(newModule);
-  };
+  }, [isAuthenticated, modules.length, migrateMutation, createMutation]);
 
-  const handleDelete = (id: number, name: string) => {
-    if (confirm(`Are you sure you want to delete the "${name}" module? This will delete all associated data.`)) {
-      deleteMutation.mutate({ id });
+  // Auto-redirect to form designer if module exists
+  useEffect(() => {
+    if (modules.length > 0) {
+      const platformsModule = modules.find(m => m.name === "Platforms");
+      if (platformsModule) {
+        setLocation(`/module-builder/${platformsModule.id}/design`);
+      }
     }
-  };
+  }, [modules, setLocation]);
 
-  if (loading) {
+  if (loading || createMutation.isPending) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Loading...</p>
+          <p className="mt-4 text-muted-foreground">Loading Module Builder...</p>
         </div>
       </div>
     );
@@ -92,148 +58,62 @@ export default function ModuleBuilder() {
 
   return (
     <div className="container mx-auto py-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Module Builder</h1>
+      <div className="max-w-3xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold">Platform Form Customization</h1>
           <p className="text-muted-foreground mt-2">
-            Create custom modules and design their forms visually
+            Customize the fields and layout of your platform tracking form
           </p>
         </div>
-        <Button onClick={() => setCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          New Module
-        </Button>
-      </div>
 
-      {modules.length === 0 ? (
-        <Card className="p-12 text-center">
-          <div className="max-w-md mx-auto">
-            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Plus className="h-8 w-8 text-primary" />
+        <Card className="p-8">
+          <div className="flex items-start gap-6">
+            <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Settings className="h-8 w-8 text-primary" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">No modules yet</h3>
-            <p className="text-muted-foreground mb-6">
-              Get started by creating your first custom module. You can create modules for contacts, deals, projects, or any other data you need to track.
-            </p>
-            <Button onClick={() => setCreateDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Your First Module
-            </Button>
+            <div className="flex-1">
+              <h2 className="text-2xl font-semibold mb-2">Platforms Module</h2>
+              <p className="text-muted-foreground mb-6">
+                Design your platform tracking form by adding, removing, and organizing fields. 
+                Changes will be reflected immediately in the "Add Platform" and "Edit Platform" dialogs.
+              </p>
+              <Link href={`/module-builder/${modules[0]?.id}/design`}>
+                <Button size="lg">
+                  <Settings className="h-5 w-5 mr-2" />
+                  Customize Platform Form
+                  <ArrowRight className="h-5 w-5 ml-2" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {modules.map((module) => (
-            <Card key={module.id} className="p-6 hover:shadow-lg transition-shadow">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="text-xl font-semibold">{module.name}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {module.singularName} / {module.pluralName}
-                  </p>
-                </div>
-                {!module.isSystem && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(module.id, module.name)}
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
-                )}
-              </div>
-              
-              {module.description && (
-                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                  {module.description}
-                </p>
-              )}
 
-              <div className="flex gap-2">
-                <Link href={`/module-builder/${module.id}/design`}>
-                  <Button variant="outline" size="sm" className="flex-1">
-                    <Settings className="h-4 w-4 mr-2" />
-                    Design Form
-                  </Button>
-                </Link>
-                <Link href={`/module/${module.id}`}>
-                  <Button variant="outline" size="sm" className="flex-1">
-                    <Eye className="h-4 w-4 mr-2" />
-                    View Data
-                  </Button>
-                </Link>
-              </div>
-            </Card>
-          ))}
+        <div className="mt-8 p-6 bg-muted/50 rounded-lg">
+          <h3 className="font-semibold mb-3">What you can customize:</h3>
+          <ul className="space-y-2 text-sm text-muted-foreground">
+            <li className="flex items-start gap-2">
+              <span className="text-primary mt-0.5">•</span>
+              <span>Add new fields like dropdowns, checkboxes, text areas, and more</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-primary mt-0.5">•</span>
+              <span>Reorder fields by dragging them into your preferred layout</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-primary mt-0.5">•</span>
+              <span>Set field labels, placeholders, and help text</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-primary mt-0.5">•</span>
+              <span>Mark fields as required or unique</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-primary mt-0.5">•</span>
+              <span>Configure dropdown options and validation rules</span>
+            </li>
+          </ul>
         </div>
-      )}
-
-      {/* Create Module Dialog */}
-      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Create New Module</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 mt-4">
-            <div>
-              <Label htmlFor="name">Module Name *</Label>
-              <Input
-                id="name"
-                placeholder="e.g., Contacts, Deals, Projects"
-                value={newModule.name}
-                onChange={(e) => setNewModule({ ...newModule, name: e.target.value })}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="singularName">Singular Name *</Label>
-                <Input
-                  id="singularName"
-                  placeholder="e.g., Contact"
-                  value={newModule.singularName}
-                  onChange={(e) => setNewModule({ ...newModule, singularName: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="pluralName">Plural Name *</Label>
-                <Input
-                  id="pluralName"
-                  placeholder="e.g., Contacts"
-                  value={newModule.pluralName}
-                  onChange={(e) => setNewModule({ ...newModule, pluralName: e.target.value })}
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="icon">Icon (Lucide icon name)</Label>
-              <Input
-                id="icon"
-                placeholder="e.g., Users, Briefcase, FolderKanban"
-                value={newModule.icon}
-                onChange={(e) => setNewModule({ ...newModule, icon: e.target.value })}
-              />
-            </div>
-            <div>
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                placeholder="What is this module for?"
-                value={newModule.description}
-                onChange={(e) => setNewModule({ ...newModule, description: e.target.value })}
-                rows={3}
-              />
-            </div>
-            <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleCreate} disabled={createMutation.isPending}>
-                {createMutation.isPending ? "Creating..." : "Create Module"}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      </div>
     </div>
   );
 }
