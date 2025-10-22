@@ -1,0 +1,1 @@
+ALTER TABLE `platforms` ADD `logoUrl` varchar(500);

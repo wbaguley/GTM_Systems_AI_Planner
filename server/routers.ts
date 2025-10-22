@@ -5,6 +5,7 @@ import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import { settingsRouter } from "./routers-settings";
 import { aiUploadRouter } from "./routers-ai-upload";
+import { customFieldsRouter } from "./routers-custom-fields";
 import { 
   getUserPlatforms, 
   getPlatformById, 
@@ -12,11 +13,16 @@ import {
   updatePlatform, 
   deletePlatform 
 } from "./db";
+import {
+  getPlatformCustomFieldValues,
+  upsertCustomFieldValue,
+} from "./db-custom-fields";
 
 export const appRouter = router({
   system: systemRouter,
   settings: settingsRouter,
   aiUpload: aiUploadRouter,
+  customFields: customFieldsRouter,
 
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
@@ -37,7 +43,17 @@ export const appRouter = router({
     get: protectedProcedure
       .input(z.object({ id: z.number() }))
       .query(async ({ ctx, input }) => {
-        return getPlatformById(input.id, ctx.user.id);
+        const platform = await getPlatformById(input.id, ctx.user.id);
+        if (!platform) return null;
+        
+        const customFieldValues = await getPlatformCustomFieldValues(input.id);
+        return {
+          ...platform,
+          customFieldValues: customFieldValues.reduce((acc, cfv) => {
+            acc[cfv.fieldKey] = cfv.value;
+            return acc;
+          }, {} as Record<string, string | null>),
+        };
       }),
 
     create: protectedProcedure
@@ -45,6 +61,7 @@ export const appRouter = router({
         platform: z.string(),
         useCase: z.string().optional(),
         website: z.string().optional(),
+        logoUrl: z.string().optional(),
         costOwner: z.enum(["Client", "GTM Planetary", "Both"]),
         status: z.enum(["Active", "Inactive", "Cancelled"]).default("Active"),
         billingType: z.enum(["Monthly", "Yearly", "OneTime", "Usage", "Free Plan", "Pay as you go"]).optional(),
@@ -60,14 +77,24 @@ export const appRouter = router({
         isSolutionPartner: z.boolean().default(false),
         notesForManus: z.string().optional(),
         notesForStaff: z.string().optional(),
+        customFieldValues: z.record(z.string(), z.string().nullable()).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const { renewalDate, ...rest } = input;
-        return createPlatform({
+        const { renewalDate, customFieldValues, ...rest } = input;
+        const result = await createPlatform({
           ...rest,
           userId: ctx.user.id,
           renewalDate: renewalDate ? new Date(renewalDate) : undefined,
         });
+        
+        // Save custom field values
+        if (customFieldValues && result.id) {
+          for (const [fieldKey, value] of Object.entries(customFieldValues)) {
+            await upsertCustomFieldValue(result.id, fieldKey, value);
+          }
+        }
+        
+        return result;
       }),
 
     update: protectedProcedure
@@ -76,6 +103,7 @@ export const appRouter = router({
         platform: z.string().optional(),
         useCase: z.string().optional(),
         website: z.string().optional(),
+        logoUrl: z.string().optional(),
         costOwner: z.enum(["Client", "GTM Planetary", "Both"]).optional(),
         status: z.enum(["Active", "Inactive", "Cancelled"]).optional(),
         billingType: z.enum(["Monthly", "Yearly", "OneTime", "Usage", "Free Plan", "Pay as you go"]).optional(),
@@ -91,13 +119,21 @@ export const appRouter = router({
         isSolutionPartner: z.boolean().optional(),
         notesForManus: z.string().optional(),
         notesForStaff: z.string().optional(),
+        customFieldValues: z.record(z.string(), z.string().nullable()).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const { id, renewalDate, ...data } = input;
-        return updatePlatform(id, ctx.user.id, {
+        const { id, renewalDate, customFieldValues, ...data } = input;
+        await updatePlatform(id, ctx.user.id, {
           ...data,
           renewalDate: renewalDate ? new Date(renewalDate) : undefined,
         });
+        
+        // Update custom field values
+        if (customFieldValues) {
+          for (const [fieldKey, value] of Object.entries(customFieldValues)) {
+            await upsertCustomFieldValue(id, fieldKey, value);
+          }
+        }
       }),
 
     delete: protectedProcedure

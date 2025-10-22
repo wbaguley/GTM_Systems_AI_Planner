@@ -22,6 +22,20 @@
       "when": 1761166621629,
       "tag": "0002_exotic_blacklash",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1761167228935,
+      "tag": "0003_worried_alice",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1761167598343,
+      "tag": "0004_wet_cassandra_nova",
+      "breakpoints": true
     }
   ]
 }

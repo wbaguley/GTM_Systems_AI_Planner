@@ -20,6 +20,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Pencil, Trash2, ExternalLink } from "lucide-react";
 import { AIDocumentUpload } from "@/components/AIDocumentUpload";
+import { DynamicFormField } from "@/components/DynamicFormField";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -27,6 +28,7 @@ interface PlatformFormData {
   platform: string;
   useCase: string;
   website: string;
+  logoUrl: string;
   costOwner: "Client" | "GTM Planetary" | "Both";
   status: "Active" | "Inactive" | "Cancelled";
   billingType?: "Monthly" | "Yearly" | "OneTime" | "Usage" | "Free Plan" | "Pay as you go";
@@ -42,12 +44,14 @@ interface PlatformFormData {
   isSolutionPartner: boolean;
   notesForManus: string;
   notesForStaff: string;
+  customFieldValues: Record<string, string | null>;
 }
 
 const initialFormData: PlatformFormData = {
   platform: "",
   useCase: "",
   website: "",
+  logoUrl: "",
   costOwner: "GTM Planetary",
   status: "Active",
   billingType: undefined,
@@ -63,6 +67,7 @@ const initialFormData: PlatformFormData = {
   isSolutionPartner: false,
   notesForManus: "",
   notesForStaff: "",
+  customFieldValues: {},
 };
 
 export default function Platforms() {
@@ -73,6 +78,7 @@ export default function Platforms() {
 
   const utils = trpc.useUtils();
   const { data: platforms, isLoading } = trpc.platforms.list.useQuery();
+  const { data: customFields = [] } = trpc.customFields.list.useQuery();
   const createMutation = trpc.platforms.create.useMutation({
     onSuccess: () => {
       utils.platforms.list.invalidate();
@@ -133,6 +139,7 @@ export default function Platforms() {
       platform: platform.platform,
       useCase: platform.useCase || "",
       website: platform.website || "",
+      logoUrl: platform.logoUrl || "",
       costOwner: platform.costOwner,
       status: platform.status,
       billingType: platform.billingType || undefined,
@@ -148,6 +155,7 @@ export default function Platforms() {
       isSolutionPartner: platform.isSolutionPartner || false,
       notesForManus: platform.notesForManus || "",
       notesForStaff: platform.notesForStaff || "",
+      customFieldValues: platform.customFieldValues || {},
     });
     setDialogOpen(true);
   };
@@ -215,13 +223,39 @@ export default function Platforms() {
 
                 <div className="col-span-2">
                   <Label htmlFor="website">Website URL</Label>
-                  <Input
-                    id="website"
-                    type="url"
-                    value={formData.website}
-                    onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                    placeholder="https://example.com"
-                  />
+                  <div className="flex gap-2">
+                    {formData.logoUrl && (
+                      <img
+                        src={formData.logoUrl}
+                        alt="Platform logo"
+                        className="w-10 h-10 rounded border object-contain"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    )}
+                    <Input
+                      id="website"
+                      type="url"
+                      value={formData.website}
+                      onChange={(e) => {
+                        const url = e.target.value;
+                        setFormData({ ...formData, website: url });
+                        
+                        // Auto-fetch logo from website
+                        if (url) {
+                          try {
+                            const domain = new URL(url).hostname;
+                            const logoUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+                            setFormData(prev => ({ ...prev, logoUrl }));
+                          } catch (err) {
+                            // Invalid URL, ignore
+                          }
+                        }
+                      }}
+                      className="flex-1"
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -412,6 +446,34 @@ export default function Platforms() {
                     rows={2}
                   />
                 </div>
+
+                {/* Custom Fields */}
+                {customFields.length > 0 && (
+                  <>
+                    <div className="col-span-2">
+                      <div className="border-t pt-4">
+                        <h3 className="text-sm font-semibold mb-4">Custom Fields</h3>
+                      </div>
+                    </div>
+                    {customFields.map((field) => (
+                      <div key={field.id} className="col-span-2">
+                        <DynamicFormField
+                          field={field}
+                          value={formData.customFieldValues[field.fieldKey]}
+                          onChange={(fieldKey, value) => {
+                            setFormData({
+                              ...formData,
+                              customFieldValues: {
+                                ...formData.customFieldValues,
+                                [fieldKey]: value,
+                              },
+                            });
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </>
+                )}
               </div>
 
               <div className="flex justify-end gap-2">
@@ -472,6 +534,16 @@ export default function Platforms() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     <CardTitle className="truncate flex items-center gap-2">
+                      {platform.logoUrl && (
+                        <img
+                          src={platform.logoUrl}
+                          alt={`${platform.platform} logo`}
+                          className="w-6 h-6 rounded object-contain shrink-0"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      )}
                       {platform.platform}
                       {platform.website && (
                         <a

@@ -19,6 +19,7 @@ export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
 export * from "./schema-apikeys";
+export * from "./schema-custom-fields";
 
 /**
  * Platforms table for tracking tech stack
@@ -31,6 +32,7 @@ export const platforms = mysqlTable("platforms", {
   platform: varchar("platform", { length: 255 }).notNull(),
   useCase: text("useCase"),
   website: varchar("website", { length: 500 }),
+  logoUrl: varchar("logoUrl", { length: 500 }),
   
   // Cost and ownership
   costOwner: mysqlEnum("costOwner", ["Client", "GTM Planetary", "Both"]).notNull(),

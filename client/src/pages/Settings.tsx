@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Eye, EyeOff, Key, Users } from "lucide-react";
+import { Eye, EyeOff, Key, Users, Settings2 } from "lucide-react";
+import { CustomizationSettings } from "@/components/CustomizationSettings";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -67,8 +68,12 @@ export default function Settings() {
         </p>
       </div>
 
-      <Tabs defaultValue="api-keys" className="w-full">
+      <Tabs defaultValue="customization" className="w-full">
         <TabsList>
+          <TabsTrigger value="customization">
+            <Settings2 className="h-4 w-4 mr-2" />
+            Customization
+          </TabsTrigger>
           <TabsTrigger value="api-keys">
             <Key className="h-4 w-4 mr-2" />
             API Keys
@@ -78,6 +83,10 @@ export default function Settings() {
             Users
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="customization">
+          <CustomizationSettings />
+        </TabsContent>
 
         <TabsContent value="api-keys" className="space-y-4">
           <Card>
