@@ -25,7 +25,9 @@ import { toast } from "sonner";
 export default function PlatformsDynamic() {
   const { isAuthenticated, loading: authLoading } = useAuth();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [editingRecordId, setEditingRecordId] = useState<number | null>(null);
+  const [viewingRecord, setViewingRecord] = useState<any | null>(null);
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -320,7 +322,14 @@ export default function PlatformsDynamic() {
               "bg-red-100 text-red-800";
 
             return (
-              <Card key={record.id} className="hover:shadow-lg transition-shadow">
+              <Card 
+                key={record.id} 
+                className="hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => {
+                  setViewingRecord(record);
+                  setViewDialogOpen(true);
+                }}
+              >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3 flex-1">
@@ -345,14 +354,20 @@ export default function PlatformsDynamic() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleEdit(record)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(record);
+                        }}
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDelete(record.id, data.platform)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(record.id, data.platform);
+                        }}
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
@@ -423,6 +438,78 @@ export default function PlatformsDynamic() {
                 : editingRecordId
                 ? "Update"
                 : "Create"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Details Dialog */}
+      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              {viewingRecord?.data?.logoUrl && (
+                <img
+                  src={viewingRecord.data.logoUrl}
+                  alt={viewingRecord.data.platform}
+                  className="w-10 h-10 object-contain rounded"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
+                />
+              )}
+              {viewingRecord?.data?.platform || "Platform Details"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 mt-4">
+            {fields.map((field) => {
+              const value = viewingRecord?.data?.[field.fieldKey];
+              if (!value && value !== 0 && value !== false) return null;
+              
+              return (
+                <div key={field.id} className="border-b pb-4 last:border-0">
+                  <Label className="text-sm font-semibold text-muted-foreground">
+                    {field.label}
+                  </Label>
+                  <div className="mt-2 text-base">
+                    {field.fieldType === "url" ? (
+                      <a
+                        href={value}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline flex items-center gap-1"
+                      >
+                        {value}
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    ) : field.fieldType === "checkbox" ? (
+                      <span>{value === "true" || value === true ? "✓ Yes" : "✗ No"}</span>
+                    ) : field.fieldType === "date" ? (
+                      <span>{new Date(value).toLocaleDateString()}</span>
+                    ) : field.fieldType === "currency" ? (
+                      <span>${parseFloat(value).toLocaleString()}</span>
+                    ) : field.fieldType === "longtext" ? (
+                      <p className="whitespace-pre-wrap">{value}</p>
+                    ) : (
+                      <span>{value}</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex justify-end gap-2 mt-6">
+            <Button variant="outline" onClick={() => setViewDialogOpen(false)}>
+              Close
+            </Button>
+            <Button
+              onClick={() => {
+                setViewDialogOpen(false);
+                handleEdit(viewingRecord);
+              }}
+            >
+              <Pencil className="h-4 w-4 mr-2" />
+              Edit
             </Button>
           </div>
         </DialogContent>
