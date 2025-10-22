@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, platforms, InsertPlatform, Platform } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +89,55 @@ export async function getUser(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// Platform query helpers
+export async function getUserPlatforms(userId: number): Promise<Platform[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(platforms).where(eq(platforms.userId, userId)).orderBy(desc(platforms.createdAt));
+}
+
+export async function getPlatformById(platformId: number, userId: number): Promise<Platform | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(platforms).where(
+    and(eq(platforms.id, platformId), eq(platforms.userId, userId))
+  ).limit(1);
+  
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createPlatform(data: InsertPlatform): Promise<Platform> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(platforms).values(data);
+  const insertedId = Number(result[0].insertId);
+  
+  const inserted = await db.select().from(platforms).where(eq(platforms.id, insertedId)).limit(1);
+  return inserted[0];
+}
+
+export async function updatePlatform(platformId: number, userId: number, data: Partial<InsertPlatform>): Promise<Platform | undefined> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(platforms).set(data).where(
+    and(eq(platforms.id, platformId), eq(platforms.userId, userId))
+  );
+  
+  return getPlatformById(platformId, userId);
+}
+
+export async function deletePlatform(platformId: number, userId: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.delete(platforms).where(
+    and(eq(platforms.id, platformId), eq(platforms.userId, userId))
+  );
+  
+  return result[0].affectedRows > 0;
+}
+

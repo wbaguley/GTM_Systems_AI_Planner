@@ -1,20 +1,10 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, decimal, boolean, date } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
- * Extend this file with additional tables as your product grows.
- * Columns use camelCase to match both database fields and generated types.
  */
 export const users = mysqlTable("users", {
-  /**
-   * Surrogate primary key. Auto-incremented numeric value managed by the database.
-   * Use this for relations between tables.
-   */
   id: int("id").autoincrement().primaryKey(),
-  /**
-   * Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user.
-   * This mirrors the Manus account and should be used for authentication lookups.
-   */
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
@@ -28,4 +18,49 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+/**
+ * Platforms table for tracking tech stack
+ */
+export const platforms = mysqlTable("platforms", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  
+  // Basic information
+  platform: varchar("platform", { length: 255 }).notNull(),
+  useCase: text("useCase"),
+  website: varchar("website", { length: 500 }),
+  
+  // Cost and ownership
+  costOwner: mysqlEnum("costOwner", ["Client", "GTM Planetary", "Both"]).notNull(),
+  status: mysqlEnum("status", ["Active", "Inactive", "Cancelled"]).default("Active").notNull(),
+  
+  // Billing structure
+  billingType: mysqlEnum("billingType", ["Monthly", "Yearly", "OneTime", "Usage", "Free Plan", "Pay as you go"]),
+  licenses: varchar("licenses", { length: 100 }),
+  
+  // Costs
+  monthlyAmount: int("monthlyAmount").default(0),
+  yearlyAmount: int("yearlyAmount").default(0),
+  oneTimeAmount: int("oneTimeAmount").default(0),
+  balanceUsage: int("balanceUsage").default(0),
+  
+  // Renewal and dates
+  renewalDate: date("renewalDate"),
+  renewalDay: int("renewalDay"),
+  
+  // Categories
+  isMyToolbelt: boolean("isMyToolbelt").default(false),
+  isInternalBusiness: boolean("isInternalBusiness").default(false),
+  isSolutionPartner: boolean("isSolutionPartner").default(false),
+  
+  // Notes
+  notesForManus: text("notesForManus"),
+  notesForStaff: text("notesForStaff"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Platform = typeof platforms.$inferSelect;
+export type InsertPlatform = typeof platforms.$inferInsert;
+

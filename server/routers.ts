@@ -1,7 +1,15 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, router } from "./_core/trpc";
+import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { z } from "zod";
+import { 
+  getUserPlatforms, 
+  getPlatformById, 
+  createPlatform, 
+  updatePlatform, 
+  deletePlatform 
+} from "./db";
 
 export const appRouter = router({
   system: systemRouter,
@@ -17,12 +25,127 @@ export const appRouter = router({
     }),
   }),
 
-  // TODO: add feature routers here, e.g.
-  // todo: router({
-  //   list: protectedProcedure.query(({ ctx }) =>
-  //     db.getUserTodos(ctx.user.id)
-  //   ),
-  // }),
+  platforms: router({
+    list: protectedProcedure.query(async ({ ctx }) => {
+      return getUserPlatforms(ctx.user.id);
+    }),
+
+    get: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ ctx, input }) => {
+        return getPlatformById(input.id, ctx.user.id);
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        platform: z.string(),
+        useCase: z.string().optional(),
+        website: z.string().optional(),
+        costOwner: z.enum(["Client", "GTM Planetary", "Both"]),
+        status: z.enum(["Active", "Inactive", "Cancelled"]).default("Active"),
+        billingType: z.enum(["Monthly", "Yearly", "OneTime", "Usage", "Free Plan", "Pay as you go"]).optional(),
+        licenses: z.string().optional(),
+        monthlyAmount: z.number().default(0),
+        yearlyAmount: z.number().default(0),
+        oneTimeAmount: z.number().default(0),
+        balanceUsage: z.number().default(0),
+        renewalDate: z.string().optional(),
+        renewalDay: z.number().optional(),
+        isMyToolbelt: z.boolean().default(false),
+        isInternalBusiness: z.boolean().default(false),
+        isSolutionPartner: z.boolean().default(false),
+        notesForManus: z.string().optional(),
+        notesForStaff: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { renewalDate, ...rest } = input;
+        return createPlatform({
+          ...rest,
+          userId: ctx.user.id,
+          renewalDate: renewalDate ? new Date(renewalDate) : undefined,
+        });
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        platform: z.string().optional(),
+        useCase: z.string().optional(),
+        website: z.string().optional(),
+        costOwner: z.enum(["Client", "GTM Planetary", "Both"]).optional(),
+        status: z.enum(["Active", "Inactive", "Cancelled"]).optional(),
+        billingType: z.enum(["Monthly", "Yearly", "OneTime", "Usage", "Free Plan", "Pay as you go"]).optional(),
+        licenses: z.string().optional(),
+        monthlyAmount: z.number().optional(),
+        yearlyAmount: z.number().optional(),
+        oneTimeAmount: z.number().optional(),
+        balanceUsage: z.number().optional(),
+        renewalDate: z.string().optional(),
+        renewalDay: z.number().optional(),
+        isMyToolbelt: z.boolean().optional(),
+        isInternalBusiness: z.boolean().optional(),
+        isSolutionPartner: z.boolean().optional(),
+        notesForManus: z.string().optional(),
+        notesForStaff: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { id, renewalDate, ...data } = input;
+        return updatePlatform(id, ctx.user.id, {
+          ...data,
+          renewalDate: renewalDate ? new Date(renewalDate) : undefined,
+        });
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        return deletePlatform(input.id, ctx.user.id);
+      }),
+
+    stats: protectedProcedure.query(async ({ ctx }) => {
+      const allPlatforms = await getUserPlatforms(ctx.user.id);
+      
+      const activeCount = allPlatforms.filter(p => p.status === "Active").length;
+      const cancelledCount = allPlatforms.filter(p => p.status === "Cancelled").length;
+      
+      const monthlyTotal = allPlatforms
+        .filter(p => p.status === "Active")
+        .reduce((sum, p) => sum + (p.monthlyAmount || 0), 0);
+      
+      const yearlyTotal = allPlatforms
+        .filter(p => p.status === "Active")
+        .reduce((sum, p) => sum + (p.yearlyAmount || 0), 0);
+      
+      const estimatedAnnual = monthlyTotal * 12 + yearlyTotal;
+      
+      // Get upcoming renewals (next 30 days)
+      const today = new Date();
+      const thirtyDaysFromNow = new Date(today);
+      thirtyDaysFromNow.setDate(today.getDate() + 30);
+      
+      const upcomingRenewals = allPlatforms.filter(p => {
+        if (!p.renewalDate || p.status !== "Active") return false;
+        const renewalDate = new Date(p.renewalDate);
+        return renewalDate >= today && renewalDate <= thirtyDaysFromNow;
+      });
+      
+      return {
+        totalPlatforms: allPlatforms.length,
+        activeCount,
+        cancelledCount,
+        monthlyTotal,
+        yearlyTotal,
+        estimatedAnnual,
+        upcomingRenewals: upcomingRenewals.map(p => ({
+          id: p.id,
+          platform: p.platform,
+          renewalDate: p.renewalDate,
+          amount: p.billingType === "Monthly" ? p.monthlyAmount : p.yearlyAmount,
+        })),
+      };
+    }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
+
