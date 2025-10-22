@@ -4,7 +4,7 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import Dashboard from "./pages/Dashboard";
+import DashboardDynamic from "./pages/DashboardDynamic";
 import PlatformsDynamic from "./pages/PlatformsDynamic";
 import Settings from "./pages/Settings";
 import ModuleBuilder from "./pages/ModuleBuilder";
@@ -15,7 +15,7 @@ function Router() {
   return (
     <DashboardLayout>
       <Switch>
-        <Route path="/" component={Dashboard} />
+        <Route path="/" component={DashboardDynamic} />
         <Route path="/platforms" component={PlatformsDynamic} />
         <Route path="/settings" component={Settings} />
         <Route path="/module-builder" component={ModuleBuilder} />

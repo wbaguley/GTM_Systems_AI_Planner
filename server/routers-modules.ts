@@ -208,6 +208,43 @@ export const modulesRouter = router({
       return await db.getModuleRecords(input.moduleId, ctx.user.id);
     }),
 
+  getStats: protectedProcedure
+    .input(z.object({ moduleId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const records = await db.getModuleRecords(input.moduleId, ctx.user.id);
+      
+      // Calculate stats for Platforms module
+      let totalCount = records.length;
+      let activeCount = 0;
+      let cancelledCount = 0;
+      let monthlyTotal = 0;
+      let yearlyTotal = 0;
+      
+      records.forEach((record: any) => {
+        const data = record.data || {};
+        const status = data.status;
+        
+        if (status === "Active") {
+          activeCount++;
+          monthlyTotal += parseFloat(data.monthlyAmount || "0");
+          yearlyTotal += parseFloat(data.yearlyAmount || "0");
+        } else if (status === "Cancelled") {
+          cancelledCount++;
+        }
+      });
+      
+      const estimatedAnnual = (monthlyTotal * 12) + yearlyTotal;
+      
+      return {
+        totalCount,
+        activeCount,
+        cancelledCount,
+        monthlyTotal,
+        yearlyTotal,
+        estimatedAnnual,
+      };
+    }),
+
   getRecord: protectedProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ input }) => {
