@@ -36,6 +36,13 @@
       "when": 1761167598343,
       "tag": "0004_wet_cassandra_nova",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1761169706029,
+      "tag": "0005_first_spectrum",
+      "breakpoints": true
     }
   ]
 }

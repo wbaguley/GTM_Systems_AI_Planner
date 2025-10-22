@@ -20,6 +20,7 @@ export type InsertUser = typeof users.$inferInsert;
 
 export * from "./schema-apikeys";
 export * from "./schema-custom-fields";
+export * from "./schema-modules";
 
 /**
  * Platforms table for tracking tech stack

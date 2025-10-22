@@ -2,6 +2,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { modulesRouter } from "./routers-modules";
 import { z } from "zod";
 import { settingsRouter } from "./routers-settings";
 import { aiUploadRouter } from "./routers-ai-upload";
@@ -21,6 +22,7 @@ import {
 export const appRouter = router({
   system: systemRouter,
   settings: settingsRouter,
+  modules: modulesRouter,
   aiUpload: aiUploadRouter,
   customFields: customFieldsRouter,
 
