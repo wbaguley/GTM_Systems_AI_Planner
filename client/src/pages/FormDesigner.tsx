@@ -432,8 +432,12 @@ export default function FormDesigner() {
                     id="field-label"
                     value={selectedField.label}
                     onChange={(e) => handleFieldUpdate({ label: e.target.value })}
-                    disabled={selectedField.isSystem}
                   />
+                  {selectedField.isSystem && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      This is a default field - only the label can be edited
+                    </p>
+                  )}
                 </div>
 
                 <div>
