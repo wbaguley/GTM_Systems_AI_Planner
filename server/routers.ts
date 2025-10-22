@@ -3,6 +3,8 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
+import { settingsRouter } from "./routers-settings";
+import { aiUploadRouter } from "./routers-ai-upload";
 import { 
   getUserPlatforms, 
   getPlatformById, 
@@ -13,6 +15,8 @@ import {
 
 export const appRouter = router({
   system: systemRouter,
+  settings: settingsRouter,
+  aiUpload: aiUploadRouter,
 
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),

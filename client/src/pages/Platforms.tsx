@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Pencil, Trash2, ExternalLink } from "lucide-react";
+import { AIDocumentUpload } from "@/components/AIDocumentUpload";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -433,6 +434,9 @@ export default function Platforms() {
           </DialogContent>
         </Dialog>
       </div>
+
+      {/* AI Document Upload */}
+      <AIDocumentUpload />
 
       {/* Search */}
       <div className="max-w-md">
