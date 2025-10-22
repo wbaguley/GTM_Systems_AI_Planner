@@ -219,6 +219,8 @@ export const modulesRouter = router({
       let cancelledCount = 0;
       let monthlyTotal = 0;
       let yearlyTotal = 0;
+      let oneTimeTotal = 0;
+      let balanceTotal = 0;
       
       records.forEach((record: any) => {
         const data = record.data || {};
@@ -228,12 +230,14 @@ export const modulesRouter = router({
           activeCount++;
           monthlyTotal += parseFloat(data.monthlyAmount || "0");
           yearlyTotal += parseFloat(data.yearlyAmount || "0");
+          oneTimeTotal += parseFloat(data.oneTimeAmount || "0");
+          balanceTotal += parseFloat(data.balanceUsage || "0");
         } else if (status === "Cancelled") {
           cancelledCount++;
         }
       });
       
-      const estimatedAnnual = (monthlyTotal * 12) + yearlyTotal;
+      const estimatedAnnual = (monthlyTotal * 12) + yearlyTotal + oneTimeTotal + balanceTotal;
       
       return {
         totalCount,
