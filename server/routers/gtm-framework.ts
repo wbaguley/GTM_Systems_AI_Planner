@@ -14,6 +14,8 @@ import {
   saveAssessmentResult,
   getAssessmentResult,
 } from "../db/helpers/gtm-framework";
+import { analyzeAssessment } from "../services/gtm-ai-analyzer";
+import { generatePDFReport } from "../services/gtm-pdf-generator";
 
 export const gtmFrameworkRouter = router({
   // Get all frameworks
@@ -90,6 +92,29 @@ export const gtmFrameworkRouter = router({
   completeAssessment: protectedProcedure
     .input(z.object({ assessmentId: z.number() }))
     .mutation(async ({ ctx, input }) => {
+      // Get assessment, framework, questions, and responses
+      const assessment = await getAssessmentById(input.assessmentId, ctx.user.id);
+      if (!assessment) {
+        throw new Error("Assessment not found");
+      }
+
+      const framework = await getFrameworkById(assessment.frameworkId);
+      if (!framework) {
+        throw new Error("Framework not found");
+      }
+
+      const questions = await getFrameworkQuestions(assessment.frameworkId);
+      const responses = await getAssessmentResponses(input.assessmentId);
+
+      // Run AI analysis
+      const analysis = await analyzeAssessment(framework, questions, responses);
+
+      // Save results
+      await saveAssessmentResult({
+        assessmentId: input.assessmentId,
+        ...analysis,
+      });
+
       // Mark assessment as completed
       await updateAssessmentStatus(
         input.assessmentId,
@@ -136,6 +161,34 @@ export const gtmFrameworkRouter = router({
     .input(z.object({ assessmentId: z.number() }))
     .query(async ({ input }) => {
       return getAssessmentResult(input.assessmentId);
+    }),
+
+  // Download PDF report
+  downloadPDF: protectedProcedure
+    .input(z.object({ assessmentId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const assessment = await getAssessmentById(input.assessmentId, ctx.user.id);
+      if (!assessment) {
+        throw new Error("Assessment not found");
+      }
+
+      const framework = await getFrameworkById(assessment.frameworkId);
+      if (!framework) {
+        throw new Error("Framework not found");
+      }
+
+      const result = await getAssessmentResult(input.assessmentId);
+      if (!result) {
+        throw new Error("Results not found");
+      }
+
+      const pdfBuffer = await generatePDFReport({ framework, assessment, result });
+      
+      // Convert buffer to base64 for transmission
+      return {
+        data: pdfBuffer.toString("base64"),
+        filename: `${framework.slug}-assessment-${assessment.id}.pdf`,
+      };
     }),
 });
 

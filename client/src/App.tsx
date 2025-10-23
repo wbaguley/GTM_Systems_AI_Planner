@@ -8,6 +8,8 @@ import DashboardDynamic from "./pages/DashboardDynamic";
 import PlatformsDynamic from "./pages/PlatformsDynamic";
 import Settings from "./pages/Settings";
 import GTMFramework from "./pages/GTMFramework";
+import GTMAssessment from "./pages/GTMAssessment";
+import GTMResults from "./pages/GTMResults";
 import ModuleBuilder from "./pages/ModuleBuilder";
 import FormDesigner from "./pages/FormDesigner";
 import DashboardLayout from "./components/DashboardLayout";
@@ -19,6 +21,8 @@ function Router() {
         <Route path="/" component={DashboardDynamic} />
         <Route path="/platforms" component={PlatformsDynamic} />
         <Route path="/gtm-framework" component={GTMFramework} />
+        <Route path="/gtm-framework/assessment/:id" component={GTMAssessment} />
+        <Route path="/gtm-framework/results/:id" component={GTMResults} />
         <Route path="/settings" component={Settings} />
         <Route path="/module-builder" component={ModuleBuilder} />
         <Route path="/module-builder/:id/design" component={FormDesigner} />
