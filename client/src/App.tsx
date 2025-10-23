@@ -11,6 +11,7 @@ import GTMFramework from "./pages/GTMFramework";
 import GTMAssessment from "./pages/GTMAssessment";
 import GTMResults from "./pages/GTMResults";
 import PlaybookBuilder from "./pages/PlaybookBuilder";
+import PlaybookCanvas from "./pages/PlaybookCanvas";
 import ModuleBuilder from "./pages/ModuleBuilder";
 import FormDesigner from "./pages/FormDesigner";
 import DashboardLayout from "./components/DashboardLayout";
@@ -25,6 +26,7 @@ function Router() {
         <Route path="/gtm-framework/assessment/:id" component={GTMAssessment} />
         <Route path="/gtm-framework/results/:assessmentId" component={GTMResults} />
         <Route path="/playbook-builder" component={PlaybookBuilder} />
+        <Route path="/playbook-builder/:id" component={PlaybookCanvas} />
         <Route path="/settings" component={Settings} />
         <Route path="/module-builder" component={ModuleBuilder} />
         <Route path="/module-builder/:id/design" component={FormDesigner} />
