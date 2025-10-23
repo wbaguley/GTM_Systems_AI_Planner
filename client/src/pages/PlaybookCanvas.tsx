@@ -182,6 +182,11 @@ export default function PlaybookCanvas() {
     description: "",
     duration: "",
   });
+  const [edgeContextMenu, setEdgeContextMenu] = useState<{
+    edge: Edge | null;
+    x: number;
+    y: number;
+  } | null>(null);
 
   const { data: playbookData, isLoading } = trpc.playbook.getComplete.useQuery(
     { id: playbookId },
@@ -254,22 +259,40 @@ export default function PlaybookCanvas() {
     [playbookId, createConnectionMutation, setEdges]
   );
 
-  const onEdgeClick = useCallback(
-    async (_event: React.MouseEvent, edge: Edge) => {
-      if (window.confirm("Delete this connection?")) {
-        try {
-          await deleteConnectionMutation.mutateAsync({
-            id: parseInt(edge.id),
-          });
-          setEdges((eds) => eds.filter((e) => e.id !== edge.id));
-          toast.success("Connection deleted");
-        } catch (error) {
-          toast.error("Failed to delete connection");
-        }
+  const onEdgeContextMenu = useCallback(
+    (event: React.MouseEvent, edge: Edge) => {
+      event.preventDefault();
+      setEdgeContextMenu({
+        edge,
+        x: event.clientX,
+        y: event.clientY,
+      });
+    },
+    []
+  );
+
+  const handleDeleteEdge = useCallback(
+    async (edge: Edge) => {
+      try {
+        await deleteConnectionMutation.mutateAsync({
+          id: parseInt(edge.id),
+        });
+        setEdges((eds) => eds.filter((e) => e.id !== edge.id));
+        toast.success("Connection deleted");
+      } catch (error) {
+        toast.error("Failed to delete connection");
       }
+      setEdgeContextMenu(null);
     },
     [deleteConnectionMutation, setEdges]
   );
+
+  // Close context menu when clicking elsewhere
+  useEffect(() => {
+    const handleClick = () => setEdgeContextMenu(null);
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, []);
 
   const handleAddNodeFromLibrary = (nodeType: string) => {
     setNewNode({ ...newNode, type: nodeType as any });
@@ -474,7 +497,7 @@ export default function PlaybookCanvas() {
             onConnect={onConnect}
             onNodeClick={handleNodeClick}
             onPaneClick={handlePaneClick}
-            onEdgeClick={onEdgeClick}
+            onEdgeContextMenu={onEdgeContextMenu}
             nodeTypes={nodeTypes}
             defaultEdgeOptions={defaultEdgeOptions}
             fitView
@@ -661,6 +684,26 @@ export default function PlaybookCanvas() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edge Context Menu */}
+      {edgeContextMenu && edgeContextMenu.edge && (
+        <div
+          className="fixed bg-background border rounded-lg shadow-lg py-1 z-50"
+          style={{
+            left: edgeContextMenu.x,
+            top: edgeContextMenu.y,
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            className="w-full px-4 py-2 text-left hover:bg-accent flex items-center space-x-2 text-destructive"
+            onClick={() => handleDeleteEdge(edgeContextMenu.edge!)}
+          >
+            <Trash2 className="h-4 w-4" />
+            <span>Delete Connection</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
