@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS playbook_node_executions (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  execution_id INT NOT NULL,\n  node_id INT NOT NULL,\n  status VARCHAR(50) NOT NULL DEFAULT 'pending',\n  started_at TIMESTAMP NULL,\n  completed_at TIMESTAMP NULL,\n  notes TEXT,\n  completed_by VARCHAR(255),\n  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n  FOREIGN KEY (execution_id) REFERENCES playbook_executions(id) ON DELETE CASCADE,\n  FOREIGN KEY (node_id) REFERENCES playbook_nodes(id) ON DELETE CASCADE\n)",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3LAnvSXMR8umuBe.f52b07393637 --database YUPTCJckXM3xQEPeBnDj6i --execute CREATE TABLE IF NOT EXISTS playbook_node_executions (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  execution_id INT NOT NULL,\n  node_id INT NOT NULL,\n  status VARCHAR(50) NOT NULL DEFAULT 'pending',\n  started_at TIMESTAMP NULL,\n  completed_at TIMESTAMP NULL,\n  notes TEXT,\n  completed_by VARCHAR(255),\n  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n  FOREIGN KEY (execution_id) REFERENCES playbook_executions(id) ON DELETE CASCADE,\n  FOREIGN KEY (node_id) REFERENCES playbook_nodes(id) ON DELETE CASCADE\n)",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 261
+}
