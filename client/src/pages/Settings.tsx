@@ -4,12 +4,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Eye, EyeOff, Key, Users, Settings2 } from "lucide-react";
+import { Eye, EyeOff, Key, Users, Settings2, Blocks } from "lucide-react";
 import { CustomizationSettings } from "@/components/CustomizationSettings";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useLocation } from "wouter";
 
 export default function Settings() {
+  const [, setLocation] = useLocation();
   const [showOpenAI, setShowOpenAI] = useState(false);
   const [showAnthropic, setShowAnthropic] = useState(false);
   
@@ -74,6 +76,10 @@ export default function Settings() {
             <Settings2 className="h-4 w-4 mr-2" />
             Customization
           </TabsTrigger>
+          <TabsTrigger value="module-builder">
+            <Blocks className="h-4 w-4 mr-2" />
+            Module Builder
+          </TabsTrigger>
           <TabsTrigger value="api-keys">
             <Key className="h-4 w-4 mr-2" />
             API Keys
@@ -86,6 +92,29 @@ export default function Settings() {
 
         <TabsContent value="customization">
           <CustomizationSettings />
+        </TabsContent>
+
+        <TabsContent value="module-builder">
+          <Card>
+            <CardHeader>
+              <CardTitle>Module Builder</CardTitle>
+              <CardDescription>
+                Create custom data collection modules with dynamic forms and fields
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  The Module Builder allows you to create custom forms for collecting structured data.
+                  Build modules for client intake, project tracking, assessments, or any custom workflow.
+                </p>
+                <Button onClick={() => setLocation("/module-builder")}>
+                  <Blocks className="mr-2 h-4 w-4" />
+                  Open Module Builder
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="api-keys" className="space-y-4">

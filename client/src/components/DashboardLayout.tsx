@@ -32,7 +32,6 @@ const menuItems = [
   { icon: Package, label: "Platforms", path: "/platforms" },
   { icon: Target, label: "GTM Framework", path: "/gtm-framework" },
   { icon: Workflow, label: "Playbook Builder", path: "/playbook-builder" },
-  { icon: Blocks, label: "Module Builder", path: "/module-builder" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
 
