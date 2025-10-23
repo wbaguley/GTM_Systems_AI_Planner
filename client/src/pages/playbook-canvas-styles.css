@@ -2,15 +2,33 @@
 
 /* Make handles always visible with (+) icon */
 .react-flow__handle {
-  width: 20px !important;
-  height: 20px !important;
+  width: 16px !important;
+  height: 16px !important;
   border-radius: 50% !important;
   border: 2px solid white !important;
   opacity: 0;
-  transition: opacity 0.2s;
+  transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: crosshair;
+}
+
+/* Position handles at edges */
+.react-flow__handle-top {
+  top: -8px !important;
+}
+
+.react-flow__handle-right {
+  right: -8px !important;
+}
+
+.react-flow__handle-bottom {
+  bottom: -8px !important;
+}
+
+.react-flow__handle-left {
+  left: -8px !important;
 }
 
 /* Show handles on node hover */
@@ -70,9 +88,28 @@
 /* Connection line styling */
 .react-flow__edge-path {
   stroke-width: 2;
+  stroke: #64748b;
 }
 
 .react-flow__edge:hover .react-flow__edge-path {
   stroke-width: 3;
+  stroke: #3b82f6;
+  cursor: pointer;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #3b82f6;
+  stroke-width: 3;
+}
+
+/* Make edges clickable */
+.react-flow__edge {
+  cursor: pointer;
+}
+
+/* Edge labels */
+.react-flow__edge-text {
+  font-size: 12px;
+  fill: #64748b;
 }
 

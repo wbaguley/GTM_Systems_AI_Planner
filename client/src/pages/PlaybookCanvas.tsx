@@ -140,16 +140,18 @@ const nodeTypes: NodeTypes = {
 
 // Default edge style with arrows
 const defaultEdgeOptions = {
-  type: 'smoothstep',
+  type: 'default', // Changed from smoothstep to default for straighter lines
   markerEnd: {
     type: MarkerType.ArrowClosed,
     width: 20,
     height: 20,
+    color: '#64748b',
   },
   style: {
     strokeWidth: 2,
     stroke: '#64748b',
   },
+  animated: false,
 };
 
 // Shape library items
@@ -250,6 +252,23 @@ export default function PlaybookCanvas() {
       }
     },
     [playbookId, createConnectionMutation, setEdges]
+  );
+
+  const onEdgeClick = useCallback(
+    async (_event: React.MouseEvent, edge: Edge) => {
+      if (window.confirm("Delete this connection?")) {
+        try {
+          await deleteConnectionMutation.mutateAsync({
+            id: parseInt(edge.id),
+          });
+          setEdges((eds) => eds.filter((e) => e.id !== edge.id));
+          toast.success("Connection deleted");
+        } catch (error) {
+          toast.error("Failed to delete connection");
+        }
+      }
+    },
+    [deleteConnectionMutation, setEdges]
   );
 
   const handleAddNodeFromLibrary = (nodeType: string) => {
@@ -455,6 +474,7 @@ export default function PlaybookCanvas() {
             onConnect={onConnect}
             onNodeClick={handleNodeClick}
             onPaneClick={handlePaneClick}
+            onEdgeClick={onEdgeClick}
             nodeTypes={nodeTypes}
             defaultEdgeOptions={defaultEdgeOptions}
             fitView
