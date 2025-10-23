@@ -3,6 +3,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { modulesRouter } from "./routers-modules";
+import { gtmFrameworkRouter } from "./routers-gtm-framework";
 import { z } from "zod";
 import { settingsRouter } from "./routers-settings";
 import { aiUploadRouter } from "./routers-ai-upload";
@@ -25,6 +26,7 @@ export const appRouter = router({
   modules: modulesRouter,
   aiUpload: aiUploadRouter,
   customFields: customFieldsRouter,
+  gtmFramework: gtmFrameworkRouter,
 
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),

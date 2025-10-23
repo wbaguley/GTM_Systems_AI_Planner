@@ -6,6 +6,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import DashboardDynamic from "./pages/DashboardDynamic";
 import PlatformsDynamic from "./pages/PlatformsDynamic";
+import GTMFramework from "./pages/GTMFramework";
 import Settings from "./pages/Settings";
 import ModuleBuilder from "./pages/ModuleBuilder";
 import FormDesigner from "./pages/FormDesigner";
@@ -18,6 +19,7 @@ function Router() {
         <Route path="/" component={DashboardDynamic} />
         <Route path="/platforms" component={PlatformsDynamic} />
         <Route path="/settings" component={Settings} />
+        <Route path="/gtm-framework" component={GTMFramework} />
         <Route path="/module-builder" component={ModuleBuilder} />
         <Route path="/module-builder/:id/design" component={FormDesigner} />
         <Route path="/404" component={NotFound} />
