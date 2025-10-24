@@ -4,7 +4,8 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { modulesRouter } from "./routers-modules";
 import { gtmFrameworkRouter } from "./routers/gtm-framework";
-import { playbookRouter } from "./routers/playbook";
+import { playbookRouter } from './routers/playbook';
+import { icpAssessmentRouter } from './routers/icp-assessment';
 import { z } from "zod";
 import { settingsRouter } from "./routers-settings";
 import { aiUploadRouter } from "./routers-ai-upload";
@@ -29,6 +30,7 @@ export const appRouter = router({
   customFields: customFieldsRouter,
   gtmFramework: gtmFrameworkRouter,
   playbook: playbookRouter,
+  icpAssessment: icpAssessmentRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

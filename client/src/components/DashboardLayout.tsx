@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Package, Settings, Blocks, Target, Workflow } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Package, Settings, Blocks, Target, Workflow, Users } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -32,6 +32,7 @@ const menuItems = [
   { icon: Package, label: "Platforms", path: "/platforms" },
   { icon: Target, label: "GTM Framework", path: "/gtm-framework" },
   { icon: Workflow, label: "Playbook Builder", path: "/playbook-builder" },
+  { icon: Users, label: "ICP Assessment", path: "/icp-assessment" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
 

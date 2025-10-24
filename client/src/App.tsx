@@ -7,7 +7,8 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import DashboardDynamic from "./pages/DashboardDynamic";
 import PlatformsDynamic from "./pages/PlatformsDynamic";
 import Settings from "./pages/Settings";
-import GTMFramework from "./pages/GTMFramework";
+import GTMFramework from './pages/GTMFramework';
+import ICPAssessment from './pages/ICPAssessment';
 import GTMAssessment from "./pages/GTMAssessment";
 import GTMResults from "./pages/GTMResults";
 import PlaybookBuilder from "./pages/PlaybookBuilder";
@@ -27,6 +28,7 @@ function Router() {
         <Route path="/gtm-framework/results/:assessmentId" component={GTMResults} />
         <Route path="/playbook-builder" component={PlaybookBuilder} />
         <Route path="/playbook-builder/:id" component={PlaybookCanvas} />
+        <Route path="/icp-assessment" component={ICPAssessment} />
         <Route path="/settings" component={Settings} />
         <Route path="/module-builder" component={ModuleBuilder} />
         <Route path="/module-builder/:id/design" component={FormDesigner} />
