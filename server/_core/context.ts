@@ -13,6 +13,20 @@ export async function createContext(
 ): Promise<TrpcContext> {
   let user: User | null = null;
 
+  // Development mode: bypass authentication
+  if (process.env.NODE_ENV === 'development') {
+    const { getUser } = await import('../db');
+    const devUser = await getUser('default-owner-openid');
+    if (devUser) {
+      console.log('[Auth] Using development user:', devUser.email);
+      return {
+        req: opts.req,
+        res: opts.res,
+        user: devUser,
+      };
+    }
+  }
+
   try {
     user = await sdk.authenticateRequest(opts.req);
   } catch (error) {

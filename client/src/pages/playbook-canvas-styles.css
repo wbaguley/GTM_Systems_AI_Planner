@@ -1,0 +1,115 @@
+/* Custom styles for Playbook Canvas connection handles */
+
+/* Make handles always visible with (+) icon */
+.react-flow__handle {
+  width: 16px !important;
+  height: 16px !important;
+  border-radius: 50% !important;
+  border: 2px solid white !important;
+  opacity: 0;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: crosshair;
+}
+
+/* Position handles at edges */
+.react-flow__handle-top {
+  top: -8px !important;
+}
+
+.react-flow__handle-right {
+  right: -8px !important;
+}
+
+.react-flow__handle-bottom {
+  bottom: -8px !important;
+}
+
+.react-flow__handle-left {
+  left: -8px !important;
+}
+
+/* Show handles on node hover */
+.react-flow__node:hover .react-flow__handle {
+  opacity: 1 !important;
+}
+
+/* Add (+) icon using ::before pseudo-element */
+.react-flow__handle::before {
+  content: '+';
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Different colors for different node types */
+.react-flow__node[data-type="start"] .react-flow__handle {
+  background-color: #16a34a !important; /* green-600 */
+}
+
+.react-flow__node[data-type="step"] .react-flow__handle {
+  background-color: #2563eb !important; /* blue-600 */
+}
+
+.react-flow__node[data-type="decision"] .react-flow__handle {
+  background-color: #ca8a04 !important; /* yellow-600 */
+}
+
+.react-flow__node[data-type="end"] .react-flow__handle {
+  background-color: #dc2626 !important; /* red-600 */
+}
+
+.react-flow__node[data-type="delay"] .react-flow__handle {
+  background-color: #ea580c !important; /* orange-600 */
+}
+
+.react-flow__node[data-type="note"] .react-flow__handle {
+  background-color: #facc15 !important; /* yellow-400 */
+  border-color: #4b5563 !important; /* gray-600 */
+}
+
+.react-flow__node[data-type="note"] .react-flow__handle::before {
+  color: #1f2937; /* gray-800 */
+}
+
+/* Hover effect for handles */
+.react-flow__handle:hover {
+  transform: scale(1.2);
+  cursor: crosshair;
+}
+
+/* Connection line styling */
+.react-flow__edge-path {
+  stroke-width: 2;
+  stroke: #64748b;
+}
+
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke-width: 3;
+  stroke: #3b82f6;
+  cursor: pointer;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #3b82f6;
+  stroke-width: 3;
+}
+
+/* Make edges clickable */
+.react-flow__edge {
+  cursor: pointer;
+}
+
+/* Edge labels */
+.react-flow__edge-text {
+  font-size: 12px;
+  fill: #64748b;
+}
+
