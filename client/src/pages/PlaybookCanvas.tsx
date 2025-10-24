@@ -15,6 +15,7 @@ import ReactFlow, {
   EdgeTypes,
   Handle,
   Position,
+  ConnectionMode,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import "./playbook-canvas-styles.css";
@@ -502,6 +503,8 @@ export default function PlaybookCanvas() {
             onEdgeContextMenu={onEdgeContextMenu}
             nodeTypes={nodeTypes}
             defaultEdgeOptions={defaultEdgeOptions}
+            connectionMode={ConnectionMode.Loose}
+            connectionRadius={30}
             fitView
           >
             <Background />
