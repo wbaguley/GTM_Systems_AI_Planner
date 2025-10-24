@@ -8,7 +8,8 @@ import DashboardDynamic from "./pages/DashboardDynamic";
 import PlatformsDynamic from "./pages/PlatformsDynamic";
 import Settings from "./pages/Settings";
 import GTMFramework from './pages/GTMFramework';
-import ICPAssessment from './pages/ICPAssessment';
+import ICPAssessment from "./pages/ICPAssessment";
+import ICPQuestionnaire from "./pages/ICPQuestionnaire";
 import GTMAssessment from "./pages/GTMAssessment";
 import GTMResults from "./pages/GTMResults";
 import PlaybookBuilder from "./pages/PlaybookBuilder";
@@ -29,6 +30,7 @@ function Router() {
         <Route path="/playbook-builder" component={PlaybookBuilder} />
         <Route path="/playbook-builder/:id" component={PlaybookCanvas} />
         <Route path="/icp-assessment" component={ICPAssessment} />
+        <Route path="/icp-assessment/:id/questionnaire" component={ICPQuestionnaire} />
         <Route path="/settings" component={Settings} />
         <Route path="/module-builder" component={ModuleBuilder} />
         <Route path="/module-builder/:id/design" component={FormDesigner} />

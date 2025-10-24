@@ -49,6 +49,13 @@ export const icpAssessmentRouter = router({
     return await icpHelpers.getAllQuestions();
   }),
 
+  // Get questions (alias for getQuestionsBySection for backward compatibility)
+  getQuestions: protectedProcedure
+    .input(z.object({ sectionId: z.number() }))
+    .query(async ({ input }: { input: { sectionId: number } }) => {
+      return await icpHelpers.getQuestionsBySection(input.sectionId);
+    }),
+
   // Save response
   saveResponse: protectedProcedure
     .input(
