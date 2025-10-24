@@ -284,11 +284,16 @@ export default function ICPAssessment() {
                   <SelectValue placeholder="Select revenue range" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="<$500K">Less than $500K</SelectItem>
-                  <SelectItem value="$500K-$1M">$500K - $1M</SelectItem>
-                  <SelectItem value="$1M-$5M">$1M - $5M</SelectItem>
-                  <SelectItem value="$5M-$10M">$5M - $10M</SelectItem>
-                  <SelectItem value="$10M+">$10M+</SelectItem>
+                  <SelectItem value="Less than $500K">Less than $500K</SelectItem>
+                  <SelectItem value="$500K - $1M">$500K - $1M</SelectItem>
+                  <SelectItem value="$1M - $5M">$1M - $5M</SelectItem>
+                  <SelectItem value="$5M - $10M">$5M - $10M</SelectItem>
+                  <SelectItem value="$10M - $25M">$10M - $25M</SelectItem>
+                  <SelectItem value="$25M - $50M">$25M - $50M</SelectItem>
+                  <SelectItem value="$50M - $100M">$50M - $100M</SelectItem>
+                  <SelectItem value="$100M - $500M">$100M - $500M</SelectItem>
+                  <SelectItem value="$500M - $1B">$500M - $1B</SelectItem>
+                  <SelectItem value="$1B+">$1B+</SelectItem>
                 </SelectContent>
               </Select>
             </div>
