@@ -22,7 +22,8 @@ export * from "./schema-apikeys";
 export * from "./schema-custom-fields";
 export * from "./schema-modules";
 export * from "./schema-gtm-framework";
-export * from "./schema-playbook";
+export * from './schema-playbook';
+export * from './schema-icp-assessment';
 
 /**
  * Platforms table for tracking tech stack

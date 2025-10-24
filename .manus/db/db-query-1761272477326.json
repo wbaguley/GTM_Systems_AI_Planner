@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS icp_assessments (\n  id INT PRIMARY KEY AUTO_INCREMENT,\n  user_id VARCHAR(255) NOT NULL,\n  company_name VARCHAR(255) NOT NULL,\n  industry VARCHAR(255),\n  company_size VARCHAR(50),\n  revenue VARCHAR(50),\n  status VARCHAR(50) NOT NULL DEFAULT 'draft',\n  completed_at TIMESTAMP NULL,\n  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP\n)",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3LAnvSXMR8umuBe.f52b07393637 --database YUPTCJckXM3xQEPeBnDj6i --execute CREATE TABLE IF NOT EXISTS icp_assessments (\n  id INT PRIMARY KEY AUTO_INCREMENT,\n  user_id VARCHAR(255) NOT NULL,\n  company_name VARCHAR(255) NOT NULL,\n  industry VARCHAR(255),\n  company_size VARCHAR(50),\n  revenue VARCHAR(50),\n  status VARCHAR(50) NOT NULL DEFAULT 'draft',\n  completed_at TIMESTAMP NULL,\n  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP\n)",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1967
+}
