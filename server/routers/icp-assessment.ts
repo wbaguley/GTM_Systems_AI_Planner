@@ -116,16 +116,16 @@ export const icpAssessmentRouter = router({
   // Generate AI analysis
   generateAnalysis: protectedProcedure
     .input(z.object({ assessmentId: z.number() }))
-    .mutation(async ({ input }: { input: { assessmentId: number } }) => {
-      const service = new ICPAnalysisService();
+    .mutation(async ({ input, ctx }: { input: { assessmentId: number }; ctx: any }) => {
+      const service = new ICPAnalysisService(ctx.user.id);
       return await service.analyzeAssessment(input.assessmentId);
     }),
 
   // Get AI analysis results
   getAnalysis: protectedProcedure
     .input(z.object({ assessmentId: z.number() }))
-    .query(async ({ input }: { input: { assessmentId: number } }) => {
-      const service = new ICPAnalysisService();
+    .query(async ({ input, ctx }: { input: { assessmentId: number }; ctx: any }) => {
+      const service = new ICPAnalysisService(ctx.user.id);
       return await service.getAnalysisResults(input.assessmentId);
     }),
 });

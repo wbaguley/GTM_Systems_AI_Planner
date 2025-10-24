@@ -1,5 +1,7 @@
 import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
 import { getDb } from '../db';
+import { getApiKey } from '../db-apikeys';
 import { 
   icpAssessments, 
   icpAssessmentResponses, 
@@ -72,23 +74,10 @@ interface AnalysisResult {
 }
 
 export class ICPAnalysisService {
-  private openai: OpenAI;
-  private model: string;
-  private maxTokens: number;
+  private userId: number;
 
-  constructor() {
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      throw new Error('OPENAI_API_KEY environment variable is not set');
-    }
-    this.openai = new OpenAI({ apiKey });
-    
-    // Configurable model - defaults to gpt-4o-mini for cost efficiency
-    // Can be changed to: gpt-4o, gpt-4-turbo, gpt-3.5-turbo
-    this.model = process.env.OPENAI_MODEL || 'gpt-4o-mini';
-    
-    // Configurable max tokens - defaults to 3000 to control costs
-    this.maxTokens = parseInt(process.env.OPENAI_MAX_TOKENS || '3000', 10);
+  constructor(userId: number) {
+    this.userId = userId;
   }
 
   /**
@@ -143,8 +132,8 @@ export class ICPAnalysisService {
     // 4. Build the analysis prompt
     const prompt = this.buildAnalysisPrompt(assessmentData, responses, sections);
 
-    // 5. Call OpenAI API
-    const aiResponse = await this.callOpenAI(prompt);
+    // 5. Call LLM API
+    const aiResponse = await this.callLLM(prompt);
 
     // 6. Parse and validate response
     const analysisResult = this.parseAIResponse(aiResponse);
@@ -297,9 +286,9 @@ IMPORTANT: Return ONLY valid JSON. Do not include any markdown formatting, code 
   }
 
   /**
-   * Call OpenAI API with the analysis prompt
+   * Call LLM API with the analysis prompt
    */
-  private async callOpenAI(prompt: string): Promise<string> {
+  private async callLLM(prompt: string): Promise<string> {
     const systemPrompt = `You are an expert sales methodology and GTM strategy consultant specializing in helping B2B companies optimize their ideal customer profiles and sales processes. You have deep expertise in:
 
 - ICP development and customer segmentation
@@ -318,14 +307,42 @@ Your analysis should be:
 
 You must return ONLY valid JSON without any markdown formatting or code blocks.`;
 
-    const response = await this.openai.chat.completions.create({
-      model: this.model,
+    // Try providers in order: OpenAI, Anthropic, Ollama
+    const providers = ['openai', 'anthropic', 'ollama'];
+    
+    for (const provider of providers) {
+      const config = await getApiKey(this.userId, provider);
+      
+      if (provider === 'openai' && config?.apiKey) {
+        return await this.callOpenAI(systemPrompt, prompt, config.apiKey);
+      } else if (provider === 'anthropic' && config?.apiKey) {
+        return await this.callAnthropic(systemPrompt, prompt, config.apiKey);
+      } else if (provider === 'ollama' && config?.serverUrl) {
+        return await this.callOllama(systemPrompt, prompt, config.serverUrl);
+      }
+    }
+
+    throw new Error('No AI provider configured. Please configure OpenAI, Anthropic, or Ollama in Settings.');
+  }
+
+  /**
+   * Call OpenAI API
+   */
+  private async callOpenAI(systemPrompt: string, prompt: string, apiKey: string): Promise<string> {
+    const openai = new OpenAI({ apiKey });
+    
+    // Use environment variable for model if set, otherwise default to gpt-4o-mini
+    const model = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+    const maxTokens = parseInt(process.env.OPENAI_MAX_TOKENS || '3000', 10);
+
+    const response = await openai.chat.completions.create({
+      model,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt }
       ],
       temperature: 0.7,
-      max_tokens: this.maxTokens,
+      max_tokens: maxTokens,
     });
 
     const content = response.choices[0]?.message?.content;
@@ -334,6 +351,81 @@ You must return ONLY valid JSON without any markdown formatting or code blocks.`
     }
 
     return content;
+  }
+
+  /**
+   * Call Anthropic API
+   */
+  private async callAnthropic(systemPrompt: string, prompt: string, apiKey: string): Promise<string> {
+    const anthropic = new Anthropic({ apiKey });
+    
+    const model = process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022';
+    const maxTokens = parseInt(process.env.ANTHROPIC_MAX_TOKENS || '4000', 10);
+
+    const response = await anthropic.messages.create({
+      model,
+      max_tokens: maxTokens,
+      system: systemPrompt,
+      messages: [
+        { role: 'user', content: prompt }
+      ],
+    });
+
+    const content = response.content[0];
+    if (content.type !== 'text') {
+      throw new Error('Unexpected response type from Anthropic');
+    }
+
+    return content.text;
+  }
+
+  /**
+   * Call Ollama API
+   */
+  private async callOllama(systemPrompt: string, prompt: string, serverUrl: string): Promise<string> {
+    const model = process.env.OLLAMA_MODEL || 'mistral';
+    
+    // Ensure serverUrl doesn't have trailing slash
+    const baseUrl = serverUrl.replace(/\/$/, '');
+    const endpoint = `${baseUrl}/api/generate`;
+    
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          prompt: `${systemPrompt}\n\n${prompt}`,
+          stream: false,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Ollama API error (${response.status}): ${errorText}`);
+      }
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        throw new Error(`Ollama returned non-JSON response. Check if Ollama is running at ${baseUrl}. Response: ${text.substring(0, 200)}`);
+      }
+
+      const data = await response.json();
+      
+      if (!data.response) {
+        throw new Error('Ollama response missing "response" field');
+      }
+      
+      return data.response;
+    } catch (error: any) {
+      if (error.message.includes('fetch failed') || error.code === 'ECONNREFUSED') {
+        throw new Error(`Cannot connect to Ollama server at ${baseUrl}. Make sure Ollama is running and accessible.`);
+      }
+      throw error;
+    }
   }
 
   /**
