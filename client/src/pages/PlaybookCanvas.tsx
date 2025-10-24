@@ -188,6 +188,9 @@ export default function PlaybookCanvas() {
     x: number;
     y: number;
   } | null>(null);
+  const [isAIGenerateDialogOpen, setIsAIGenerateDialogOpen] = useState(false);
+  const [aiGenerateDescription, setAiGenerateDescription] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const { data: playbookData, isLoading } = trpc.playbook.getComplete.useQuery(
     { id: playbookId },
@@ -199,6 +202,7 @@ export default function PlaybookCanvas() {
   const deleteNodeMutation = trpc.playbook.deleteNode.useMutation();
   const createConnectionMutation = trpc.playbook.createConnection.useMutation();
   const deleteConnectionMutation = trpc.playbook.deleteConnection.useMutation();
+  const generateAIMutation = trpc.playbook.generateWithAI.useMutation();
 
   // Load playbook data
   useEffect(() => {
@@ -380,6 +384,78 @@ export default function PlaybookCanvas() {
         "3. A quality check step before the final deployment"
       );
     }, 1500);
+  };
+
+  const handleGenerateWithAI = async () => {
+    if (!aiGenerateDescription.trim()) {
+      toast.error("Please enter a workflow description");
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const result = await generateAIMutation.mutateAsync({
+        description: aiGenerateDescription,
+        category: playbookData?.playbook?.category || undefined,
+      });
+
+      // Create nodes from AI generation
+      const createdNodes: any[] = [];
+      for (const aiNode of result.nodes) {
+        const dbNode = await createNodeMutation.mutateAsync({
+          playbookId,
+          nodeType: aiNode.type,
+          title: aiNode.title,
+          description: aiNode.description,
+          duration: aiNode.duration,
+          position: JSON.stringify(aiNode.position) as any,
+        });
+        createdNodes.push({
+          id: dbNode.id.toString(),
+          type: aiNode.type,
+          position: aiNode.position,
+          data: {
+            label: aiNode.title,
+            description: aiNode.description,
+            duration: aiNode.duration,
+          },
+        });
+      }
+
+      // Create connections from AI generation
+      for (const conn of result.connections) {
+        const sourceNode = createdNodes[conn.from];
+        const targetNode = createdNodes[conn.to];
+        if (sourceNode && targetNode) {
+          await createConnectionMutation.mutateAsync({
+            playbookId,
+            sourceNodeId: parseInt(sourceNode.id),
+            targetNodeId: parseInt(targetNode.id),
+            label: conn.label,
+          });
+        }
+      }
+
+      // Update canvas with new nodes and edges
+      setNodes(createdNodes);
+      const newEdges = result.connections.map((conn, idx) => ({
+        id: `edge-${idx}`,
+        source: createdNodes[conn.from]?.id,
+        target: createdNodes[conn.to]?.id,
+        label: conn.label,
+        ...defaultEdgeOptions,
+      }));
+      setEdges(newEdges);
+
+      toast.success(`Generated ${createdNodes.length} nodes successfully!`);
+      setIsAIGenerateDialogOpen(false);
+      setAiGenerateDescription("");
+    } catch (error) {
+      console.error("AI Generation Error:", error);
+      toast.error("Failed to generate workflow. Please try again.");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   if (isLoading) {
@@ -589,7 +665,13 @@ export default function PlaybookCanvas() {
 
                 <div className="space-y-2">
                   <h4 className="font-medium text-sm">Quick Actions</h4>
-                  <Button variant="outline" size="sm" className="w-full justify-start">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full justify-start"
+                    onClick={() => setIsAIGenerateDialogOpen(true)}
+                  >
+                    <Sparkles className="mr-2 h-4 w-4" />
                     Generate from description
                   </Button>
                   <Button variant="outline" size="sm" className="w-full justify-start">
@@ -685,6 +767,73 @@ export default function PlaybookCanvas() {
               disabled={createNodeMutation.isPending}
             >
               {createNodeMutation.isPending ? "Adding..." : "Add Node"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* AI Generation Dialog */}
+      <Dialog open={isAIGenerateDialogOpen} onOpenChange={setIsAIGenerateDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <Sparkles className="mr-2 h-5 w-5 text-primary" />
+              Generate Workflow with AI
+            </DialogTitle>
+            <DialogDescription>
+              Describe the workflow you want to create and AI will generate a complete playbook with nodes and connections.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="ai-description">Workflow Description</Label>
+              <Textarea
+                id="ai-description"
+                value={aiGenerateDescription}
+                onChange={(e) => setAiGenerateDescription(e.target.value)}
+                placeholder="e.g., Create a customer onboarding workflow for a SaaS company with welcome email, account setup, training session, and follow-up"
+                rows={6}
+                className="resize-none"
+              />
+              <p className="text-xs text-muted-foreground mt-2">
+                💡 Tip: Be specific about the steps, decisions, and timing you want in your workflow.
+              </p>
+            </div>
+            {isGenerating && (
+              <div className="bg-muted p-4 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                  <div>
+                    <p className="font-medium">AI is generating your workflow...</p>
+                    <p className="text-sm text-muted-foreground">This may take 10-30 seconds</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsAIGenerateDialogOpen(false)}
+              disabled={isGenerating}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleGenerateWithAI}
+              disabled={isGenerating || !aiGenerateDescription.trim()}
+            >
+              {isGenerating ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Generate Workflow
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

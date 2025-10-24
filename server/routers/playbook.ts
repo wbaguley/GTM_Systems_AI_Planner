@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { router, protectedProcedure } from "../_core/trpc";
+import { generatePlaybookWithAI } from "../services/playbook-ai-generator";
 import {
   createPlaybook,
   getPlaybookById,
@@ -154,6 +155,18 @@ export const playbookRouter = router({
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }: { ctx: any; input: { id: number } }) => {
       return getCompletePlaybook(input.id, ctx.user.id);
+    }),
+
+  // AI Generation
+  generateWithAI: protectedProcedure
+    .input(
+      z.object({
+        description: z.string(),
+        category: z.string().optional(),
+      })
+    )
+    .mutation(async ({ input }: { input: { description: string; category?: string } }) => {
+      return generatePlaybookWithAI(input.description, input.category);
     }),
 });
 
