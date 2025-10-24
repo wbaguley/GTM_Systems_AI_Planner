@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { router, protectedProcedure } from '../_core/trpc';
 import * as icpHelpers from '../db/helpers/icp-assessment';
-import { ICPAnalysisService } from '../services/icp-analysis';
 
 export const icpAssessmentRouter = router({
   // Create new assessment
@@ -111,22 +110,6 @@ export const icpAssessmentRouter = router({
     .mutation(async ({ input }: { input: { id: number } }) => {
       await icpHelpers.deleteAssessment(input.id);
       return { success: true };
-    }),
-
-  // Generate AI analysis
-  generateAnalysis: protectedProcedure
-    .input(z.object({ assessmentId: z.number() }))
-    .mutation(async ({ input, ctx }: { input: { assessmentId: number }; ctx: any }) => {
-      const service = new ICPAnalysisService(ctx.user.id);
-      return await service.analyzeAssessment(input.assessmentId);
-    }),
-
-  // Get AI analysis results
-  getAnalysis: protectedProcedure
-    .input(z.object({ assessmentId: z.number() }))
-    .query(async ({ input, ctx }: { input: { assessmentId: number }; ctx: any }) => {
-      const service = new ICPAnalysisService(ctx.user.id);
-      return await service.getAnalysisResults(input.assessmentId);
     }),
 });
 
