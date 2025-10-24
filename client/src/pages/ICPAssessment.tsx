@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'wouter';
 import { trpc } from '@/lib/trpc';
 import { Button } from '@/components/ui/button';
 import {
@@ -29,7 +29,7 @@ import {
 import { Target, Plus, FileText, Trash2, ArrowRight } from 'lucide-react';
 
 export default function ICPAssessment() {
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [formData, setFormData] = useState({
     companyName: '',
@@ -56,7 +56,7 @@ export default function ICPAssessment() {
       
       // Navigate to the questionnaire
       if (result && 'insertId' in result) {
-        navigate(`/icp-assessment/${result.insertId}/questionnaire`);
+        setLocation(`/icp-assessment/${result.insertId}/questionnaire`);
       }
     } catch (error) {
       console.error('Failed to create assessment:', error);
@@ -225,14 +225,33 @@ export default function ICPAssessment() {
                   <SelectValue placeholder="Select industry" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="HVAC">HVAC</SelectItem>
-                  <SelectItem value="Plumbing">Plumbing</SelectItem>
-                  <SelectItem value="Electrical">Electrical</SelectItem>
-                  <SelectItem value="Construction">Construction</SelectItem>
-                  <SelectItem value="Dental">Dental</SelectItem>
-                  <SelectItem value="Healthcare">Healthcare</SelectItem>
-                  <SelectItem value="SaaS">SaaS</SelectItem>
+                  <SelectItem value="Technology/SaaS">Technology/SaaS</SelectItem>
+                  <SelectItem value="Financial Services">Financial Services</SelectItem>
+                  <SelectItem value="Professional Services">Professional Services</SelectItem>
+                  <SelectItem value="Consulting">Consulting</SelectItem>
+                  <SelectItem value="Marketing/Advertising">Marketing/Advertising</SelectItem>
+                  <SelectItem value="Healthcare/MedTech">Healthcare/MedTech</SelectItem>
                   <SelectItem value="Manufacturing">Manufacturing</SelectItem>
+                  <SelectItem value="E-commerce/Retail">E-commerce/Retail</SelectItem>
+                  <SelectItem value="Education/EdTech">Education/EdTech</SelectItem>
+                  <SelectItem value="Real Estate/PropTech">Real Estate/PropTech</SelectItem>
+                  <SelectItem value="Logistics/Supply Chain">Logistics/Supply Chain</SelectItem>
+                  <SelectItem value="Cybersecurity">Cybersecurity</SelectItem>
+                  <SelectItem value="Data/Analytics">Data/Analytics</SelectItem>
+                  <SelectItem value="HR/HRTech">HR/HRTech</SelectItem>
+                  <SelectItem value="Legal/LegalTech">Legal/LegalTech</SelectItem>
+                  <SelectItem value="Sales Enablement">Sales Enablement</SelectItem>
+                  <SelectItem value="MarTech">MarTech</SelectItem>
+                  <SelectItem value="FinTech">FinTech</SelectItem>
+                  <SelectItem value="InsurTech">InsurTech</SelectItem>
+                  <SelectItem value="Construction Tech">Construction Tech</SelectItem>
+                  <SelectItem value="AgTech">AgTech</SelectItem>
+                  <SelectItem value="CleanTech/Energy">CleanTech/Energy</SelectItem>
+                  <SelectItem value="Telecommunications">Telecommunications</SelectItem>
+                  <SelectItem value="Media/Entertainment">Media/Entertainment</SelectItem>
+                  <SelectItem value="Travel/Hospitality">Travel/Hospitality</SelectItem>
+                  <SelectItem value="Non-Profit">Non-Profit</SelectItem>
+                  <SelectItem value="Government/Public Sector">Government/Public Sector</SelectItem>
                   <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>
