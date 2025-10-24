@@ -61,10 +61,10 @@ import { Separator } from "../components/ui/separator";
 // Custom node components with (+) connection handles
 const StartNode = ({ data }: any) => (
   <div className="px-4 py-2 shadow-md rounded-full bg-green-500 text-white border-2 border-green-600 relative">
-    <Handle type="source" position={Position.Top} />
-    <Handle type="source" position={Position.Right} />
-    <Handle type="source" position={Position.Bottom} />
-    <Handle type="source" position={Position.Left} />
+    <Handle type="source" position={Position.Top} id="top" />
+    <Handle type="source" position={Position.Right} id="right" />
+    <Handle type="source" position={Position.Bottom} id="bottom" />
+    <Handle type="source" position={Position.Left} id="left" />
     <div className="font-bold">Start</div>
     <div className="text-xs">{data.label}</div>
   </div>
@@ -72,10 +72,10 @@ const StartNode = ({ data }: any) => (
 
 const StepNode = ({ data }: any) => (
   <div className="px-4 py-3 shadow-md rounded-lg bg-blue-500 text-white border-2 border-blue-600 min-w-[200px] relative">
-    <Handle type="target" position={Position.Top} />
-    <Handle type="target" position={Position.Right} />
-    <Handle type="target" position={Position.Bottom} />
-    <Handle type="target" position={Position.Left} />
+    <Handle type="target" position={Position.Top} id="top" />
+    <Handle type="source" position={Position.Right} id="right" />
+    <Handle type="source" position={Position.Bottom} id="bottom" />
+    <Handle type="target" position={Position.Left} id="left" />
     <div className="font-bold">{data.label}</div>
     {data.description && <div className="text-xs mt-1">{data.description}</div>}
     {data.duration && (
@@ -86,10 +86,10 @@ const StepNode = ({ data }: any) => (
 
 const DecisionNode = ({ data }: any) => (
   <div className="relative w-32 h-32 flex items-center justify-center">
-    <Handle type="target" position={Position.Top} />
-    <Handle type="source" position={Position.Right} />
-    <Handle type="source" position={Position.Bottom} />
-    <Handle type="target" position={Position.Left} />
+    <Handle type="target" position={Position.Top} id="top" />
+    <Handle type="source" position={Position.Right} id="right" />
+    <Handle type="source" position={Position.Bottom} id="bottom" />
+    <Handle type="target" position={Position.Left} id="left" />
     <div className="absolute inset-0 bg-yellow-500 border-2 border-yellow-600 shadow-md transform rotate-45"></div>
     <div className="relative z-10 font-bold text-white text-center px-2">{data.label}</div>
   </div>
@@ -97,10 +97,10 @@ const DecisionNode = ({ data }: any) => (
 
 const EndNode = ({ data }: any) => (
   <div className="px-4 py-2 shadow-md rounded-full bg-red-500 text-white border-2 border-red-600 relative">
-    <Handle type="target" position={Position.Top} />
-    <Handle type="target" position={Position.Right} />
-    <Handle type="target" position={Position.Bottom} />
-    <Handle type="target" position={Position.Left} />
+    <Handle type="target" position={Position.Top} id="top" />
+    <Handle type="target" position={Position.Right} id="right" />
+    <Handle type="target" position={Position.Bottom} id="bottom" />
+    <Handle type="target" position={Position.Left} id="left" />
     <div className="font-bold">End</div>
     <div className="text-xs">{data.label}</div>
   </div>
@@ -108,10 +108,10 @@ const EndNode = ({ data }: any) => (
 
 const NoteNode = ({ data }: any) => (
   <div className="px-4 py-3 shadow-md rounded-lg bg-yellow-100 text-gray-800 border-2 border-yellow-300 border-dashed min-w-[200px] relative">
-    <Handle type="target" position={Position.Top} />
-    <Handle type="source" position={Position.Right} />
-    <Handle type="target" position={Position.Bottom} />
-    <Handle type="target" position={Position.Left} />
+    <Handle type="target" position={Position.Top} id="top" />
+    <Handle type="source" position={Position.Right} id="right" />
+    <Handle type="target" position={Position.Bottom} id="bottom" />
+    <Handle type="target" position={Position.Left} id="left" />
     <div className="font-bold text-sm">{data.label}</div>
     {data.description && <div className="text-xs mt-1">{data.description}</div>}
   </div>
@@ -119,10 +119,10 @@ const NoteNode = ({ data }: any) => (
 
 const DelayNode = ({ data }: any) => (
   <div className="px-4 py-3 shadow-md rounded bg-orange-500 text-white border-2 border-orange-600 min-w-[180px] relative">
-    <Handle type="target" position={Position.Top} />
-    <Handle type="source" position={Position.Right} />
-    <Handle type="target" position={Position.Bottom} />
-    <Handle type="target" position={Position.Left} />
+    <Handle type="target" position={Position.Top} id="top" />
+    <Handle type="source" position={Position.Right} id="right" />
+    <Handle type="source" position={Position.Bottom} id="bottom" />
+    <Handle type="target" position={Position.Left} id="left" />
     <div className="font-bold">⏱ {data.label}</div>
     {data.duration && <div className="text-xs mt-1">{data.duration}</div>}
     {data.description && <div className="text-xs mt-1">{data.description}</div>}
@@ -232,6 +232,8 @@ export default function PlaybookCanvas() {
       const newEdge = {
         ...params,
         id: `temp-${Date.now()}`,
+        sourceHandle: params.sourceHandle,
+        targetHandle: params.targetHandle,
         ...defaultEdgeOptions,
       } as Edge;
       setEdges((eds) => addEdge(newEdge, eds));
