@@ -7,7 +7,7 @@ export function useSubscription() {
   const hasFeature = (feature: string): boolean => {
     if (!subscription) {
       // Free tier - only platforms and ai_upload
-      const freeFeatures = ["platforms", "ai_upload", "dashboard"];
+      const freeFeatures = ["platforms", "ai_upload", "dashboard", "settings"];
       return freeFeatures.includes(feature);
     }
 

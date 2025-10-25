@@ -73,6 +73,7 @@ async function initSubscriptionPlans() {
           "dashboard",
           "ai_upload",
           "export",
+          "settings",
         ]),
         isActive: true,
       });
@@ -90,6 +91,7 @@ async function initSubscriptionPlans() {
           "dashboard",
           "ai_upload",
           "export",
+          "settings",
           "gtm_framework",
           "playbook_builder",
           "icp_assessment",

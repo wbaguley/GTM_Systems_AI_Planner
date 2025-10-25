@@ -54,3 +54,8 @@
 - [x] Add subscription database helper functions
 - [x] Create subscription tRPC routers
 
+
+
+## Bug Fixes
+- [x] Allow Essentials users full access to Settings (currently restricted)
+
