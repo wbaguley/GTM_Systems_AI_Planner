@@ -6,6 +6,7 @@ import { modulesRouter } from "./routers-modules";
 import { gtmFrameworkRouter } from "./routers/gtm-framework";
 import { playbookRouter } from './routers/playbook';
 import { icpAssessmentRouter } from './routers/icp-assessment';
+import { subscriptionsRouter } from './routers-subscriptions';
 import { z } from "zod";
 import { settingsRouter } from "./routers-settings";
 import { aiUploadRouter } from "./routers-ai-upload";
@@ -31,6 +32,7 @@ export const appRouter = router({
   gtmFramework: gtmFrameworkRouter,
   playbook: playbookRouter,
   icpAssessment: icpAssessmentRouter,
+  subscriptions: subscriptionsRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

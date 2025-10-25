@@ -15,6 +15,13 @@
       "when": 1761280659560,
       "tag": "0001_robust_randall_flagg",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1761434265206,
+      "tag": "0002_rich_vengeance",
+      "breakpoints": true
     }
   ]
 }

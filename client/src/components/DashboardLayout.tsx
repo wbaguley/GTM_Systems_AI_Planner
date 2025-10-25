@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
+import { useSubscription } from "@/hooks/useSubscription";
 import { LayoutDashboard, LogOut, PanelLeft, Package, Settings, Blocks, Target, Workflow, Users } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -28,12 +29,12 @@ import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/" },
-  { icon: Package, label: "Platforms", path: "/platforms" },
-  { icon: Target, label: "GTM Framework", path: "/gtm-framework" },
-  { icon: Workflow, label: "Playbook Builder", path: "/playbook-builder" },
-  { icon: Users, label: "ICP Assessment", path: "/icp-assessment" },
-  { icon: Settings, label: "Settings", path: "/settings" },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/", feature: "dashboard" },
+  { icon: Package, label: "Platforms", path: "/platforms", feature: "platforms" },
+  { icon: Target, label: "GTM Framework", path: "/gtm-framework", feature: "gtm_framework", proOnly: true },
+  { icon: Workflow, label: "Playbook Builder", path: "/playbook-builder", feature: "playbook_builder", proOnly: true },
+  { icon: Users, label: "ICP Assessment", path: "/icp-assessment", feature: "icp_assessment", proOnly: true },
+  { icon: Settings, label: "Settings", path: "/settings", feature: "settings" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -120,6 +121,7 @@ function DashboardLayoutContent({
   setSidebarWidth,
 }: DashboardLayoutContentProps) {
   const { user, logout } = useAuth();
+  const { hasFeature, isPro } = useSubscription();
   const [location, setLocation] = useLocation();
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
@@ -215,18 +217,24 @@ function DashboardLayoutContent({
             <SidebarMenu className="px-2 py-1">
               {menuItems.map(item => {
                 const isActive = location === item.path;
+                const hasAccess = hasFeature(item.feature);
                 return (
                   <SidebarMenuItem key={item.path}>
                     <SidebarMenuButton
                       isActive={isActive}
-                      onClick={() => setLocation(item.path)}
-                      tooltip={item.label}
-                      className={`h-10 transition-all font-normal`}
+                      onClick={() => hasAccess ? setLocation(item.path) : setLocation("/pricing")}
+                      tooltip={item.proOnly && !isPro ? `${item.label} (Pro only)` : item.label}
+                      className={`h-10 transition-all font-normal ${!hasAccess ? "opacity-60" : ""}`}
                     >
                       <item.icon
                         className={`h-4 w-4 ${isActive ? "text-primary" : ""}`}
                       />
-                      <span>{item.label}</span>
+                      <span className="flex items-center gap-2">
+                        {item.label}
+                        {item.proOnly && !isPro && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">PRO</span>
+                        )}
+                      </span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );

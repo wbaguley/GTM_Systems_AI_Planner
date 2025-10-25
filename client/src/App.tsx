@@ -8,6 +8,7 @@ import DashboardDynamic from "./pages/DashboardDynamic";
 import PlatformsDynamic from "./pages/PlatformsDynamic";
 import Settings from "./pages/Settings";
 import GTMFramework from './pages/GTMFramework';
+import { FeatureGate } from './components/FeatureGate';
 import ICPAssessment from "./pages/ICPAssessment";
 import ICPQuestionnaire from "./pages/ICPQuestionnaire";
 import GTMAssessment from "./pages/GTMAssessment";
@@ -16,6 +17,7 @@ import PlaybookBuilder from "./pages/PlaybookBuilder";
 import PlaybookCanvas from "./pages/PlaybookCanvas";
 import ModuleBuilder from "./pages/ModuleBuilder";
 import FormDesigner from "./pages/FormDesigner";
+import Pricing from "./pages/Pricing";
 import DashboardLayout from "./components/DashboardLayout";
 
 function Router() {
@@ -24,13 +26,26 @@ function Router() {
       <Switch>
         <Route path="/" component={DashboardDynamic} />
         <Route path="/platforms" component={PlatformsDynamic} />
-        <Route path="/gtm-framework" component={GTMFramework} />
+        <Route path="/gtm-framework">
+          <FeatureGate feature="gtm_framework">
+            <GTMFramework />
+          </FeatureGate>
+        </Route>
         <Route path="/gtm-framework/assessment/:id" component={GTMAssessment} />
         <Route path="/gtm-framework/results/:assessmentId" component={GTMResults} />
-        <Route path="/playbook-builder" component={PlaybookBuilder} />
+        <Route path="/playbook-builder">
+          <FeatureGate feature="playbook_builder">
+            <PlaybookBuilder />
+          </FeatureGate>
+        </Route>
         <Route path="/playbook-builder/:id" component={PlaybookCanvas} />
-        <Route path="/icp-assessment" component={ICPAssessment} />
+        <Route path="/icp-assessment">
+          <FeatureGate feature="icp_assessment">
+            <ICPAssessment />
+          </FeatureGate>
+        </Route>
         <Route path="/icp-assessment/:id/questionnaire" component={ICPQuestionnaire} />
+        <Route path="/pricing" component={Pricing} />
         <Route path="/settings" component={Settings} />
         <Route path="/module-builder" component={ModuleBuilder} />
         <Route path="/module-builder/:id/design" component={FormDesigner} />

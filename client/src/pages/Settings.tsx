@@ -4,8 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Eye, EyeOff, Key, Users, Settings2, Blocks } from "lucide-react";
+import { Eye, EyeOff, Key, Users, Settings2, Blocks, CreditCard } from "lucide-react";
+import { useSubscription } from "@/hooks/useSubscription";
 import { CustomizationSettings } from "@/components/CustomizationSettings";
+import { BillingSettings } from "@/components/BillingSettings";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
@@ -76,6 +78,10 @@ export default function Settings() {
             <Settings2 className="h-4 w-4 mr-2" />
             Customization
           </TabsTrigger>
+          <TabsTrigger value="billing">
+            <CreditCard className="h-4 w-4 mr-2" />
+            Billing
+          </TabsTrigger>
           <TabsTrigger value="module-builder">
             <Blocks className="h-4 w-4 mr-2" />
             Module Builder
@@ -92,6 +98,10 @@ export default function Settings() {
 
         <TabsContent value="customization">
           <CustomizationSettings />
+        </TabsContent>
+
+        <TabsContent value="billing">
+          <BillingSettings />
         </TabsContent>
 
         <TabsContent value="module-builder">
