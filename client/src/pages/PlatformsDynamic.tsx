@@ -401,7 +401,7 @@ export default function PlatformsDynamic() {
 
       {/* Add/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingRecordId ? "Edit Platform" : "Add New Platform"}
@@ -426,6 +426,15 @@ export default function PlatformsDynamic() {
               </div>
             ))}
           </div>
+          
+          {/* Platform Documents Section (only show when editing existing platform) */}
+          {editingRecordId && (
+            <div className="mt-6 border-t pt-6">
+              <h3 className="text-lg font-semibold mb-4">Documents</h3>
+              <PlatformDocuments platformId={editingRecordId} />
+            </div>
+          )}
+          
           <div className="flex justify-end gap-2 mt-6">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
               Cancel

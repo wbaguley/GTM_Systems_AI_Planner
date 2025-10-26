@@ -185,3 +185,8 @@
 - [ ] Test document upload, categorization, and download functionality
 - [x] Ensure documents are visible and manageable from platform interface
 
+
+
+## Bug Fixes
+- [x] Add Documents section to platform Edit dialog (currently only in View dialog)
+
