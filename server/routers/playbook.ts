@@ -110,6 +110,10 @@ export const playbookRouter = router({
         duration: z.string().optional(),
         owner: z.string().optional(),
         status: z.enum(["pending", "in-progress", "completed", "skipped"]).optional(),
+        width: z.number().optional(),
+        height: z.number().optional(),
+        color: z.string().optional(),
+        shape: z.string().optional(),
       })
     )
     .mutation(async ({ input }: { input: any }) => {

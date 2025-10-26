@@ -38,6 +38,10 @@ export const playbookNodes = mysqlTable("playbook_nodes", {
   description: text("description"),
   content: text("content"), // Rich text content, AI-generated or manual
   position: json("position").notNull(), // {x: number, y: number}
+  width: int("width").default(200), // Node width in pixels
+  height: int("height").default(100), // Node height in pixels
+  color: varchar("color", { length: 50 }).default("#3b82f6"), // Node background color
+  shape: varchar("shape", { length: 50 }).default("rectangle"), // Node shape: rectangle, circle, diamond, etc.
   data: json("data"), // Additional node-specific data
   duration: varchar("duration", { length: 100 }), // For steps: estimated time (e.g., "2 hours", "3 days")
   owner: varchar("owner", { length: 255 }), // Who is responsible for this step

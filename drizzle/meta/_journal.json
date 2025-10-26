@@ -71,6 +71,13 @@
       "when": 1761447139040,
       "tag": "0009_solid_redwing",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1761450862751,
+      "tag": "0010_public_blob",
+      "breakpoints": true
     }
   ]
 }

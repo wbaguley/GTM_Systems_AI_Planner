@@ -297,3 +297,28 @@
 - [ ] Save theme preference to database per user (currently using localStorage)
 - [ ] Update Flow Builder canvas for dark mode support
 
+
+
+
+## Flow Builder Complete Rebuild (ClickUp Whiteboard Style)
+- [x] Add resizable nodes with drag handles
+- [x] Implement floating toolbar on node click (not right-click)
+- [x] Add shape picker to floating toolbar
+- [x] Add color picker to floating toolbar  
+- [x] Add clone and delete to floating toolbar
+- [x] Improve drag-and-drop from shape library
+- [x] Implement smart export that auto-crops to content bounds with padding
+- [x] Match ClickUp whiteboard UI/UX exactly
+- [x] Add node size persistence to database (width, height)
+- [x] Add node color persistence to database
+- [x] Add node shape persistence to database
+
+
+
+
+## Known Issues - Flow Builder
+- [ ] Fix floating toolbar not appearing when node is selected (ReactFlow selection mechanism needs configuration)
+- [ ] Ensure toolbar shows shape picker, color picker, clone, and delete buttons
+- [ ] Test all toolbar interactions (shape change, color change, clone, delete)
+
+
