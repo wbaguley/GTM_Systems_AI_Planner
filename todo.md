@@ -177,3 +177,11 @@
 - [x] Add tRPC procedure for generating SOP from text description
 - [x] Update SOP Generator page to show tabs or toggle between upload and describe modes
 
+
+
+## Platform Document Management UI Integration
+- [x] Integrate PlatformDocuments component into platform detail/edit view
+- [x] Add document upload section to platform pages
+- [ ] Test document upload, categorization, and download functionality
+- [x] Ensure documents are visible and manageable from platform interface
+

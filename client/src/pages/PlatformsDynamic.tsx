@@ -21,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus, Pencil, Trash2, ExternalLink, Search } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { PlatformDocuments } from "@/components/PlatformDocuments";
 
 export default function PlatformsDynamic() {
   const { isAuthenticated, loading: authLoading } = useAuth();
@@ -445,7 +446,7 @@ export default function PlatformsDynamic() {
 
       {/* View Details Dialog */}
       <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
               {viewingRecord?.data?.logoUrl && (
@@ -498,6 +499,15 @@ export default function PlatformsDynamic() {
               );
             })}
           </div>
+          
+          {/* Platform Documents Section */}
+          {viewingRecord?.id && (
+            <div className="mt-6 border-t pt-6">
+              <h3 className="text-lg font-semibold mb-4">Documents</h3>
+              <PlatformDocuments platformId={viewingRecord.id} />
+            </div>
+          )}
+          
           <div className="flex justify-end gap-2 mt-6">
             <Button variant="outline" onClick={() => setViewDialogOpen(false)}>
               Close
