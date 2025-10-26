@@ -234,7 +234,7 @@ function ResizableNode({ id, data, selected }: NodeProps) {
     const baseStyle: React.CSSProperties = {
       width: "100%",
       height: "100%",
-      backgroundColor: data.color || "#3b82f6",
+      backgroundColor: data.color || "#5b21b6",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -465,7 +465,7 @@ function ResizableNode({ id, data, selected }: NodeProps) {
             <button
               onClick={() => setShowColorPicker(!showColorPicker)}
               style={{
-                background: data.color || "#3b82f6",
+                background: data.color || "#5b21b6",
                 border: "2px solid #fff",
                 borderRadius: "4px",
                 width: "32px",
@@ -483,7 +483,7 @@ function ResizableNode({ id, data, selected }: NodeProps) {
                 }}
               >
                 <HexColorPicker
-                  color={data.color || "#3b82f6"}
+                  color={data.color || "#5b21b6"}
                   onChange={(color) => {
                     if (data.onColorChange) {
                       data.onColorChange(id, color);
@@ -571,12 +571,14 @@ function FlowCanvas() {
     color: string;
     width: number;
   }>>([]);
-  const [drawColor, setDrawColor] = useState("#3b82f6");
+  const [drawColor, setDrawColor] = useState("#5b21b6");
 
   // Connection mode state for Line/Arrow tools
   const [connectionMode, setConnectionMode] = useState(false);
   const [connectionSource, setConnectionSource] = useState<string | null>(null);
   const [connectionType, setConnectionType] = useState<'line' | 'arrow'>('line');
+  const [connectionMousePos, setConnectionMousePos] = useState<{ x: number; y: number } | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [drawWidth, setDrawWidth] = useState(3);
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -607,7 +609,7 @@ function FlowCanvas() {
           position,
           data: {
             label: node.title,
-            color: node.color || "#3b82f6",
+            color: node.color || "#5b21b6",
             shape: node.shape || "rectangle",
             width: node.width || 200,
             height: node.height || 100,
@@ -750,7 +752,7 @@ function FlowCanvas() {
       const shapeColors: Record<string, string> = {
         start: "#10b981",
         end: "#ef4444",
-        step: "#3b82f6",
+        step: "#5b21b6",
         decision: "#f59e0b",
         delay: "#f97316",
         note: "#eab308",
@@ -762,7 +764,7 @@ function FlowCanvas() {
         position,
         data: {
           label: type.charAt(0).toUpperCase() + type.slice(1),
-          color: shapeColors[type] || "#3b82f6",
+          color: shapeColors[type] || "#5b21b6",
           shape: "rectangle",
           width: 200,
           height: 100,
@@ -807,14 +809,14 @@ function FlowCanvas() {
 
       // Map tools to node types and shapes
       const toolConfig: Record<string, { label: string; color: string; shape: string; nodeType: string }> = {
-        rectangle: { label: "", color: "#3b82f6", shape: "rectangle", nodeType: "step" },
-        circle: { label: "", color: "#3b82f6", shape: "circle", nodeType: "step" },
-        line: { label: "", color: "#3b82f6", shape: "rectangle", nodeType: "step" },
+        rectangle: { label: "", color: "#5b21b6", shape: "rectangle", nodeType: "step" },
+        circle: { label: "", color: "#5b21b6", shape: "circle", nodeType: "step" },
+        line: { label: "", color: "#5b21b6", shape: "rectangle", nodeType: "step" },
         arrow: { label: "", color: "#f59e0b", shape: "parallelogram", nodeType: "step" },
         text: { label: "Click to edit text", color: "transparent", shape: "text", nodeType: "note" },
         sticky: { label: "Sticky note", color: "#fef3c7", shape: "sticky", nodeType: "note" },
         draw: { label: "", color: "#8b5cf6", shape: "rectangle", nodeType: "step" },
-        image: { label: "", color: "#3b82f6", shape: "rectangle", nodeType: "step" },
+        image: { label: "", color: "#5b21b6", shape: "rectangle", nodeType: "step" },
       };
 
       const config = toolConfig[activeTool];
@@ -1037,7 +1039,7 @@ function FlowCanvas() {
         data: {
           label: activeTool.charAt(0).toUpperCase() + activeTool.slice(1),
           shape: activeTool,
-          color: '#3b82f6',
+          color: '#5b21b6',
           width: 50,
           height: 50,
           onLabelChange: handleLabelChange,
@@ -1091,7 +1093,7 @@ function FlowCanvas() {
           position: tempNode.position,
           width: tempNode.data.width || 200,
           height: tempNode.data.height || 100,
-          color: tempNode.data.color || '#3b82f6',
+          color: tempNode.data.color || '#5b21b6',
           shape: tempNode.data.shape || 'rectangle',
         });
 
@@ -1319,7 +1321,7 @@ function FlowCanvas() {
 
   // Helper function to get button style based on active state
   const getButtonStyle = (toolName: string) => ({
-    background: activeTool === toolName ? "#3b82f6" : "transparent",
+    background: activeTool === toolName ? "#5b21b6" : "transparent",
     border: "none",
     borderRadius: "6px",
     padding: "10px 12px",
@@ -1340,7 +1342,7 @@ function FlowCanvas() {
   const shapeLibrary = [
     { type: "start", label: "Start", color: "#10b981" },
     { type: "end", label: "End", color: "#ef4444" },
-    { type: "step", label: "Step", color: "#3b82f6" },
+    { type: "step", label: "Step", color: "#5b21b6" },
     { type: "decision", label: "Decision", color: "#f59e0b" },
     { type: "delay", label: "Delay/Wait", color: "#f97316" },
     { type: "note", label: "Note", color: "#eab308" },
@@ -1693,7 +1695,7 @@ function FlowCanvas() {
                 onClick={() => exportFlow("png")}
                 style={{
                   padding: "8px 16px",
-                  backgroundColor: "#3b82f6",
+                  backgroundColor: "#5b21b6",
                   color: "#fff",
                   border: "none",
                   borderRadius: "6px",
@@ -1710,7 +1712,7 @@ function FlowCanvas() {
                 onClick={() => exportFlow("jpeg")}
                 style={{
                   padding: "8px 16px",
-                  backgroundColor: "#3b82f6",
+                  backgroundColor: "#5b21b6",
                   color: "#fff",
                   border: "none",
                   borderRadius: "6px",
@@ -1727,7 +1729,7 @@ function FlowCanvas() {
                 onClick={() => exportFlow("svg")}
                 style={{
                   padding: "8px 16px",
-                  backgroundColor: "#3b82f6",
+                  backgroundColor: "#5b21b6",
                   color: "#fff",
                   border: "none",
                   borderRadius: "6px",
@@ -1866,16 +1868,16 @@ function FlowCanvas() {
         }}
       >
         {[
-          { color: '#3b82f6', label: 'Blue' },
-          { color: '#ef4444', label: 'Red' },
-          { color: '#10b981', label: 'Green' },
-          { color: '#f59e0b', label: 'Orange' },
-          { color: '#eab308', label: 'Yellow' },
-          { color: '#8b5cf6', label: 'Purple' },
-          { color: '#ec4899', label: 'Pink' },
-          { color: '#06b6d4', label: 'Cyan' },
-          { color: '#64748b', label: 'Gray' },
-          { color: '#1e293b', label: 'Dark' },
+          { color: '#5b21b6', label: 'Galactic Purple' }, // Primary
+          { color: '#18f0fc', label: 'Cyan' }, // Secondary
+          { color: '#ad18fc', label: 'Purple' }, // Secondary
+          { color: '#eb00ff', label: 'Pink' }, // Secondary
+          { color: '#410081', label: 'Dark Purple' }, // Tertiary
+          { color: '#888b8c', label: 'Gray' }, // Tertiary
+          { color: '#ffffff', label: 'White' },
+          { color: '#000000', label: 'Black' },
+          { color: '#f59e0b', label: 'Orange' }, // Accent
+          { color: '#10b981', label: 'Green' }, // Accent
         ].map(({ color, label }) => (
           <button
             key={color}

@@ -701,3 +701,56 @@
 - [x] **Add Eraser tool** - Tool to delete individual drawing strokes by clicking on them (with keyboard shortcut 'E')
 - [x] **Remove default node labels** - New nodes now start with empty text instead of "Rectangle", "Circle", etc.
 
+
+
+## Phase 5: UX Optimization Tasks
+
+- [ ] **Add connection preview** - Show temporary line while selecting target node for Line/Arrow tools
+- [ ] **Improve cursor feedback** - Show appropriate cursors for each tool (crosshair, pointer, grab, etc.)
+- [ ] **Add visual feedback for connection mode** - Highlight source node when in connection mode
+- [ ] **Add undo/redo functionality** - Ctrl+Z/Ctrl+Y for node/edge/drawing operations
+- [ ] **Optimize drawing performance** - Reduce path points for smoother rendering
+- [ ] **Add keyboard shortcut hints** - Show keyboard shortcuts in tool tooltips
+- [ ] **Add loading states** - Show loading indicator during image upload
+- [ ] **Add error handling** - Display user-friendly error messages
+- [ ] **Add canvas zoom controls** - Better zoom in/out/fit view controls
+- [ ] **Add grid snapping** - Optional grid snap for precise alignment
+- [ ] **Add node alignment guides** - Show alignment lines when dragging nodes
+- [ ] **Add export improvements** - Better PNG/JPEG/SVG export quality
+
+
+
+
+## Brand Implementation (From Brand Kit PPT)
+
+### Color Palette
+- [x] **Update primary colors** - Replaced with Galactic Purple (#5b21b6) as primary
+- [x] **Add secondary colors** - Added Cyan (#18f0fc), Purple (#ad18fc), Pink (#eb00ff)
+- [x] **Add tertiary colors** - Added Dark Purple (#410081), Gray (#888b8c)
+- [x] **Update Flow Builder color palette** - Replaced with 10 brand colors including primary, secondary, tertiary, white, black, and accents
+
+### Typography
+- [x] **Install Montserrat font** - Imported from Google Fonts, set as primary font family
+- [x] **Update headings** - Using Montserrat Bold for all h1-h6
+- [ ] **Update subheadings** - Use Montserrat SemiBold (applied via font-bold class)
+- [x] **Update body text** - Using Montserrat Regular globally
+- [ ] **Update emphasis text** - Use Montserrat Medium Italic (available via font classes)
+
+### Logo & Branding
+- [ ] **Update app logo** - Use GTM Planetary orbital logo (white version for dark backgrounds)
+- [ ] **Add logo to sidebar** - Replace current logo with brand logo
+- [ ] **Update favicon** - Use orbital symbol
+- [ ] **Add brand colors to sidebar** - Use Galactic Purple background
+
+### UI/UX Alignment
+- [ ] **Clean, minimal design** - Ensure ample white space throughout
+- [ ] **Incorporate orbital/circular elements** - Add orbital theme to UI components
+- [ ] **Update button styles** - Use secondary colors for CTAs (Cyan, Purple, Pink)
+- [ ] **Update data visualizations** - Use brand colors for charts/graphs
+
+### Brand Voice (Content Updates)
+- [ ] **Update copy to be direct and bold** - Remove fluff, add confidence
+- [ ] **Add witty touches** - Where appropriate, add intelligent humor
+- [ ] **Make CTAs actionable** - Focus on practical, implementable solutions
+- [ ] **Use operator language** - Talk like operators, not consultants
+
