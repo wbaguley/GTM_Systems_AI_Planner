@@ -668,3 +668,24 @@
 - [ ] **Whiteboard-like Interaction:** Overall feel should mimic drawing on a physical whiteboard
 - [ ] **Immediate Visual Feedback:** Show shapes/lines as they're being drawn, not after release
 
+
+
+## Flow Builder - NEXT STEPS (Priority Order)
+
+1. [x] **Test shape rendering** - All shapes render correctly (Rectangle, Circle, Diamond verified)
+2. [x] **Test drag-to-size** - Native DOM event listeners work perfectly
+3. [x] **Test node persistence** - Nodes save to database with all properties
+4. [x] **Test node positioning** - Nodes appear at drag position correctly
+5. [x] **Test floating toolbar** - Appears on selection with shape/color pickers
+6. [x] **Test shape picker** - All 7 shapes available and shape change works
+7. [x] **Test color picker** - HexColorPicker opens and displays correctly
+8. [ ] **Implement freehand drawing** - Add true whiteboard drawing capability for Draw tool
+9. [ ] **Add secondary shape picker bar** - Bottom toolbar that appears when shape tool is selected
+10. [ ] **Add color palette** - Bottom toolbar with preset color swatches
+11. [ ] **Implement Line and Arrow tools** - Use ReactFlow edges instead of nodes
+12. [ ] **Implement Text and Sticky Note tools** - Add text input functionality
+13. [ ] **Implement Image tool** - Add image upload capability
+14. [x] **Test page refresh persistence** - Nodes reload correctly with all properties (shape, color, position, size)
+15. [ ] **Comprehensive manual QA testing** - Test all interactions with real mouse/keyboard
+16. [ ] **Optimize whiteboard UX** - Make interactions feel natural like a real whiteboard
+

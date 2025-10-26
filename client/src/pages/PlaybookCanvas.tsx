@@ -1017,9 +1017,9 @@ function FlowCanvas() {
       try {
         const result = await createNodeMutation.mutateAsync({
           playbookId: parseInt(id!),
-          label: tempNode.data.label,
-          nodeType: tempNode.data.shape || 'rectangle',
-          position: JSON.stringify(tempNode.position),
+          title: tempNode.data.label || 'New Shape',
+          nodeType: 'note', // Use 'note' type for freeform whiteboard shapes
+          position: tempNode.position,
           width: tempNode.data.width || 200,
           height: tempNode.data.height || 100,
           color: tempNode.data.color || '#3b82f6',
