@@ -89,3 +89,12 @@
 - [ ] Add customer support widget
 - [ ] Create onboarding flow for new users
 
+
+
+## Subscription Model Changes
+- [x] Remove free tier - require subscription to use app
+- [x] Add "Testing" role with full Pro access for UAT testers
+- [x] Update feature gates to support Testing role
+- [ ] Update pricing page to remove free tier messaging (can be done later)
+- [x] Add user management UI for admins to assign Testing role
+

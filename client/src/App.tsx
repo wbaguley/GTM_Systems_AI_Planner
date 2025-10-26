@@ -20,6 +20,7 @@ import FormDesigner from "./pages/FormDesigner";
 import Pricing from "./pages/Pricing";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import UserManagement from "./pages/UserManagement";
 import DashboardLayout from "./components/DashboardLayout";
 
 function Router() {
@@ -51,6 +52,7 @@ function Router() {
         <Route path="/privacy" component={PrivacyPolicy} />
         <Route path="/terms" component={TermsOfService} />
         <Route path="/settings" component={Settings} />
+        <Route path="/users" component={UserManagement} />
         <Route path="/module-builder" component={ModuleBuilder} />
         <Route path="/module-builder/:id/design" component={FormDesigner} />
         <Route path="/404" component={NotFound} />

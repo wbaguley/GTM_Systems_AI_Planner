@@ -11,6 +11,7 @@ import { z } from "zod";
 import { settingsRouter } from "./routers-settings";
 import { aiUploadRouter } from "./routers-ai-upload";
 import { customFieldsRouter } from "./routers-custom-fields";
+import { usersRouter } from "./routers-users";
 import { 
   getUserPlatforms, 
   getPlatformById, 
@@ -33,6 +34,7 @@ export const appRouter = router({
   playbook: playbookRouter,
   icpAssessment: icpAssessmentRouter,
   subscriptions: subscriptionsRouter,
+  users: usersRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

@@ -29,6 +29,13 @@
       "when": 1761436748280,
       "tag": "0003_breezy_firebird",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1761438101856,
+      "tag": "0004_conscious_zeigeist",
+      "breakpoints": true
     }
   ]
 }
