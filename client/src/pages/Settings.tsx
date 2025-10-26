@@ -371,13 +371,19 @@ export default function Settings() {
             <CardHeader>
               <CardTitle>User Management</CardTitle>
               <CardDescription>
-                Manage user accounts and permissions
+                Manage user accounts, roles, and permissions
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
-                User management features coming soon. Currently, all users are authenticated via Manus OAuth.
-              </p>
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Manage user roles and access levels. Assign admin, tester, or user roles to control feature access and permissions.
+                </p>
+                <Button onClick={() => setLocation("/user-management")}>
+                  <Users className="mr-2 h-4 w-4" />
+                  Open User Management
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

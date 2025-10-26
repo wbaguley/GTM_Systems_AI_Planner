@@ -57,6 +57,13 @@
       "when": 1761442419410,
       "tag": "0007_lame_genesis",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1761443565326,
+      "tag": "0008_sloppy_fallen_one",
+      "breakpoints": true
     }
   ]
 }

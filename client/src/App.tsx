@@ -59,6 +59,7 @@ function Router() {
         <Route path="/terms" component={TermsOfService} />
         <Route path="/settings" component={Settings} />
         <Route path="/users" component={UserManagement} />
+        <Route path="/user-management" component={UserManagement} />
         <Route path="/module-builder" component={ModuleBuilder} />
         <Route path="/module-builder/:id/design" component={FormDesigner} />
         <Route path="/404" component={NotFound} />

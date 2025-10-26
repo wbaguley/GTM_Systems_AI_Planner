@@ -193,16 +193,41 @@
 
 
 ## User Management Implementation
-- [ ] Create user management database schema (if not exists)
-- [ ] Build user management UI with add/edit/delete functionality
-- [ ] Implement role-based permissions (admin, user, tester)
+- [x] Create user management database schema (if not exists)
+- [x] Build user management UI with add/edit/delete functionality
+- [x] Implement role-based permissions (admin, user, tester)
 - [ ] Add user invitation system
-- [ ] Replace "coming soon" placeholder with functional user management
+- [x] Replace "coming soon" placeholder with functional user management
 
 ## Advanced LLM Configuration
 - [x] Add "Use Custom LLM" toggle to Settings
 - [x] Create LLM provider selection dropdown (OpenAI, Anthropic, Ollama)
 - [x] Add model selection for each provider
-- [ ] Update invokeLLM to check user settings, fall back to Forge
+- [x] Update invokeLLM to check user settings, fall back to Forge
+- [x] Update SOP Generator to pass userId to invokeLLM
 - [ ] Test all AI features with custom LLM configuration
+
+
+
+## Profile Type Updates
+- [x] Update user role enum from (user, admin, tester) to (viewer, standard, admin)
+- [x] Update user management UI to use new profile types
+- [x] Update role descriptions: Admin (full access), Standard (view + add only), Viewer (read-only)
+- [x] Update all role checks throughout the application
+- [x] Update database schema and run migration
+- [ ] Implement permission enforcement in backend and frontend
+
+
+
+## Custom Authentication System (Pre-Deployment)
+- [ ] Replace Manus OAuth with custom authentication
+- [ ] Implement email/password signup and login
+- [ ] Add Google OAuth integration
+- [ ] Create password hashing and security (bcrypt)
+- [ ] Build signup and login pages
+- [ ] Add email verification system
+- [ ] Implement password reset flow
+- [ ] Update authentication middleware
+- [ ] Add "forgot password" functionality
+- [ ] Create user profile management
 

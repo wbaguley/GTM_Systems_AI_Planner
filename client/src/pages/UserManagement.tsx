@@ -45,10 +45,10 @@ export default function UserManagement() {
     switch (role) {
       case "admin":
         return <Shield className="h-4 w-4" />;
-      case "tester":
-        return <TestTube className="h-4 w-4" />;
-      default:
+      case "standard":
         return <User className="h-4 w-4" />;
+      default:
+        return <TestTube className="h-4 w-4" />; // viewer
     }
   };
 
@@ -56,9 +56,9 @@ export default function UserManagement() {
     switch (role) {
       case "admin":
         return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-      case "tester":
+      case "standard":
         return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-      default:
+      default: // viewer
         return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200";
     }
   };
@@ -81,7 +81,7 @@ export default function UserManagement() {
           <CardHeader>
             <CardTitle>All Users</CardTitle>
             <CardDescription>
-              Assign roles to users. Testers get full Pro access without requiring a subscription.
+              Assign roles to users. Admins have full access, Standard users can view and add, Viewers are read-only.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -115,7 +115,7 @@ export default function UserManagement() {
                       onValueChange={(newRole) => {
                         updateRole.mutate({
                           userId: u.id,
-                          role: newRole as "user" | "admin" | "tester",
+                          role: newRole as "viewer" | "standard" | "admin",
                         });
                       }}
                       disabled={updateRole.isPending || u.id === user?.id}
@@ -124,8 +124,8 @@ export default function UserManagement() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="user">User</SelectItem>
-                        <SelectItem value="tester">Tester</SelectItem>
+                        <SelectItem value="viewer">Viewer</SelectItem>
+                        <SelectItem value="standard">Standard</SelectItem>
                         <SelectItem value="admin">Admin</SelectItem>
                       </SelectContent>
                     </Select>
@@ -150,21 +150,21 @@ export default function UserManagement() {
         <CardContent className="space-y-4">
           <div>
             <div className="flex items-center gap-2 font-medium mb-1">
-              <User className="h-4 w-4" />
-              User
+              <TestTube className="h-4 w-4" />
+              Viewer
             </div>
             <p className="text-sm text-muted-foreground">
-              Regular user. Requires Essentials or Pro subscription to access features.
+              Read-only access. Can view all content but cannot add, edit, or delete anything.
             </p>
           </div>
 
           <div>
             <div className="flex items-center gap-2 font-medium mb-1">
-              <TestTube className="h-4 w-4 text-blue-600" />
-              Tester
+              <User className="h-4 w-4 text-blue-600" />
+              Standard
             </div>
             <p className="text-sm text-muted-foreground">
-              UAT tester with full Pro access. No subscription required. Use this for testing before launch.
+              Can view and add new items, but cannot edit or delete existing content.
             </p>
           </div>
 
@@ -174,7 +174,7 @@ export default function UserManagement() {
               Admin
             </div>
             <p className="text-sm text-muted-foreground">
-              Full system access including user management and all features.
+              Full system access including view, add, edit, delete, and user management.
             </p>
           </div>
         </CardContent>

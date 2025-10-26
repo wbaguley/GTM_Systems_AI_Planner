@@ -6,13 +6,12 @@ export function useSubscription() {
   const { data: subscription, isLoading } = trpc.subscriptions.getMySubscription.useQuery();
   const { data: tier } = trpc.subscriptions.getMyTier.useQuery();
 
-  // Admins and Testers get full Pro access
+  // Admins get full Pro access
   const isAdmin = user?.role === "admin";
-  const isTester = user?.role === "tester";
-  const hasFullAccess = isAdmin || isTester;
+  const hasFullAccess = isAdmin;
 
   const hasFeature = (feature: string): boolean => {
-    // Admins and Testers have access to everything
+    // Admins have access to everything
     if (hasFullAccess) return true;
 
     // No subscription = no access (removed free tier)

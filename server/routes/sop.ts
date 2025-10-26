@@ -11,7 +11,7 @@ function randomSuffix() {
 }
 
 // Helper to extract text from PDF using LLM vision
-async function extractTextFromFile(fileUrl: string, fileName: string): Promise<string> {
+async function extractTextFromFile(fileUrl: string, fileName: string, userId: number): Promise<string> {
   const fileExt = fileName.toLowerCase().split('.').pop();
   
   // For PDFs and images, use LLM with file_url content type
@@ -44,7 +44,7 @@ async function extractTextFromFile(fileUrl: string, fileName: string): Promise<s
           ]
         }
       ]
-    });
+    }, userId);
     
     const content = response.choices[0]?.message?.content;
     if (typeof content === 'string') {
@@ -65,7 +65,7 @@ async function extractTextFromFile(fileUrl: string, fileName: string): Promise<s
 }
 
 // Helper to generate SOP from extracted content
-async function generateSopFromContent(content: string, fileName: string): Promise<{ title: string; sop: string }> {
+async function generateSopFromContent(content: string, fileName: string, userId: number): Promise<{ title: string; sop: string }> {
   const response = await invokeLLM({
     messages: [
       {
@@ -86,7 +86,7 @@ Format the SOP in clean Markdown.`
         content: `Source document: ${fileName}\n\nContent:\n${content}\n\nPlease create a comprehensive SOP from this content.`
       }
     ]
-  });
+  }, userId);
   
   const rawContent = response.choices[0]?.message?.content;
   let sopContent = "";
@@ -207,10 +207,10 @@ Format the SOP in clean Markdown.`
       const { url: fileUrl } = await storagePut(fileKey, buffer, input.mimeType);
       
       // Extract text from file
-      const extractedContent = await extractTextFromFile(fileUrl, input.fileName);
+      const extractedContent = await extractTextFromFile(fileUrl, input.fileName, ctx.user.id);
       
       // Generate SOP from extracted content
-      const { title, sop } = await generateSopFromContent(extractedContent, input.fileName);
+      const { title, sop } = await generateSopFromContent(extractedContent, input.fileName, ctx.user.id);
       
       // Save to database
       await createSop({
@@ -268,7 +268,7 @@ Format the SOP in clean Markdown.`
             content: `Current SOP:\n\n${sop.content}\n\nUser request: ${input.message}\n\nPlease provide the updated SOP.`
           }
         ]
-      });
+      }, ctx.user.id);
       
       const rawResponse = response.choices[0]?.message?.content;
       let updatedContent = sop.content;
