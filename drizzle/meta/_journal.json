@@ -43,6 +43,13 @@
       "when": 1761439700251,
       "tag": "0005_wandering_rawhide_kid",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1761440680599,
+      "tag": "0006_thin_princess_powerful",
+      "breakpoints": true
     }
   ]
 }

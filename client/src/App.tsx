@@ -21,6 +21,7 @@ import Pricing from "./pages/Pricing";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import UserManagement from "./pages/UserManagement";
+import SopGenerator from "./pages/SopGenerator";
 import DashboardLayout from "./components/DashboardLayout";
 
 function Router() {
@@ -48,6 +49,11 @@ function Router() {
           </FeatureGate>
         </Route>
         <Route path="/icp-assessment/:id/questionnaire" component={ICPQuestionnaire} />
+        <Route path="/sop-generator">
+          <FeatureGate feature="sop_generator">
+            <SopGenerator />
+          </FeatureGate>
+        </Route>
         <Route path="/pricing" component={Pricing} />
         <Route path="/privacy" component={PrivacyPolicy} />
         <Route path="/terms" component={TermsOfService} />

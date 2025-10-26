@@ -141,3 +141,53 @@ export async function deletePlatform(platformId: number, userId: number): Promis
   return result[0].affectedRows > 0;
 }
 
+
+
+// SOP query helpers
+export async function getUserSops(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const { sops } = await import("../drizzle/schema");
+  return db.select().from(sops).where(eq(sops.userId, userId)).orderBy(desc(sops.updatedAt));
+}
+
+export async function getSopById(sopId: number, userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const { sops } = await import("../drizzle/schema");
+  const result = await db.select().from(sops)
+    .where(and(eq(sops.id, sopId), eq(sops.userId, userId)))
+    .limit(1);
+  
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createSop(data: { userId: number; title: string; content: string; sourceFileName?: string; sourceFileUrl?: string; sourceFileKey?: string; chatHistory?: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const { sops } = await import("../drizzle/schema");
+  const result = await db.insert(sops).values(data);
+  return result;
+}
+
+export async function updateSop(sopId: number, userId: number, data: { title?: string; content?: string; chatHistory?: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const { sops } = await import("../drizzle/schema");
+  await db.update(sops)
+    .set({ ...data, updatedAt: new Date() })
+    .where(and(eq(sops.id, sopId), eq(sops.userId, userId)));
+}
+
+export async function deleteSop(sopId: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const { sops } = await import("../drizzle/schema");
+  await db.delete(sops).where(and(eq(sops.id, sopId), eq(sops.userId, userId)));
+}
+

@@ -13,6 +13,7 @@ import { settingsRouter } from "./routers-settings";
 import { aiUploadRouter } from "./routers-ai-upload";
 import { customFieldsRouter } from "./routers-custom-fields";
 import { usersRouter } from "./routers-users";
+import { sopRouter } from "./routes/sop";
 import { 
   getUserPlatforms, 
   getPlatformById, 
@@ -37,6 +38,7 @@ export const appRouter = router({
   subscriptions: subscriptionsRouter,
   platformDocuments: platformDocumentsRouter,
   users: usersRouter,
+  sop: sopRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

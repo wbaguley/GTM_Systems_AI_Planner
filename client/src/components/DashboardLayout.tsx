@@ -22,7 +22,7 @@ import {
 import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
 import { useSubscription } from "@/hooks/useSubscription";
-import { LayoutDashboard, LogOut, PanelLeft, Package, Settings, Blocks, Target, Workflow, Users } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Package, Settings, Blocks, Target, Workflow, Users, FileText } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -34,6 +34,7 @@ const menuItems = [
   { icon: Target, label: "GTM Framework", path: "/gtm-framework", feature: "gtm_framework", proOnly: true },
   { icon: Workflow, label: "Flow Builder", path: "/playbook-builder", feature: "playbook_builder", proOnly: true },
   { icon: Users, label: "ICP Assessment", path: "/icp-assessment", feature: "icp_assessment", proOnly: true },
+  { icon: FileText, label: "SOP Generator", path: "/sop-generator", feature: "sop_generator", proOnly: true },
   { icon: Settings, label: "Settings", path: "/settings", feature: "settings" },
 ];
 

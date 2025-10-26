@@ -95,6 +95,7 @@ async function initSubscriptionPlans() {
           "gtm_framework",
           "playbook_builder",
           "icp_assessment",
+          "sop_generator",
           "priority_support",
         ]),
         isActive: true,

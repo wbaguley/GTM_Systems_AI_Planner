@@ -153,3 +153,19 @@
 - [x] Change "Create Your First Playbook" button to "Create Your First Flow"
 - [x] Change "implementation playbooks" to "implementation flows"
 
+
+
+## SOP Generator Implementation (In Progress)
+- [x] Create database schema for SOPs (id, userId, title, content, sourceFileName, createdAt, updatedAt)
+- [x] Add SOP database helper functions (create, update, delete, list)
+- [x] Create SOP tRPC router with procedures (upload, generate, chat, list, get, update, delete)
+- [x] Build SOP Generator page UI with file upload component
+- [x] Implement file upload to S3 with support for PDF, DOCX, images, mind maps
+- [x] Integrate AI document analysis to extract content from uploaded files
+- [x] Build chat interface for SOP refinement with AI
+- [x] Add SOP preview/editor component
+- [x] Implement SOP export functionality (PDF, DOCX, Markdown)
+- [x] Create SOP library view to manage saved SOPs
+- [x] Add feature gate to restrict SOP Generator to Pro users
+- [x] Add navigation link to SOP Generator in sidebar
+
