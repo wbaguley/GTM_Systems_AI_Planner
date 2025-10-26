@@ -683,8 +683,9 @@
 8a. [ ] **Add drawing database persistence** - Save drawings to database and reload on page refresh
 8b. [ ] **Add drawing delete/erase** - Allow users to delete individual drawing strokes
 8c. [ ] **Add drawing color/width controls** - Toolbar controls for stroke color and width
-9. [ ] **Add secondary shape picker bar** - Bottom toolbar that appears when shape tool is selected
-10. [ ] **Add color palette** - Bottom toolbar with preset color swatches
+9. [x] **Add secondary shape picker bar** - Bottom toolbar with all 7 shapes, appears when shape tool is active, fully functional
+10. [x] **Add color palette** - Bottom toolbar with 10 preset color swatches, fully functional with instant color changes
+10a. [x] **Fix selection state management** - Added onSelectionChange to track selected nodes for toolbar actions
 11. [ ] **Implement Line and Arrow tools** - Use ReactFlow edges instead of nodes
 12. [ ] **Implement Text and Sticky Note tools** - Add text input functionality
 13. [ ] **Implement Image tool** - Add image upload capability

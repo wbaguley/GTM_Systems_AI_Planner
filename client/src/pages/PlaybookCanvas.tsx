@@ -1450,6 +1450,14 @@ function FlowCanvas() {
           onDragOver={onDragOver}
           onNodeContextMenu={onNodeContextMenu}
           onNodeDragStop={onNodeDragStop}
+          onSelectionChange={(params) => {
+            // Track selected node ID for toolbar actions
+            if (params.nodes && params.nodes.length > 0) {
+              setSelectedNodeId(params.nodes[0].id);
+            } else {
+              setSelectedNodeId(null);
+            }
+          }}
           nodeTypes={nodeTypes}
           fitView
           nodesDraggable={true}
@@ -1564,6 +1572,129 @@ function FlowCanvas() {
             />
           )}
         </svg>
+      </div>
+
+      {/* Secondary Shape Picker Bar - appears when shape tool is active */}
+      {['rectangle', 'circle', 'line', 'arrow', 'sticky'].includes(activeTool) && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '24px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            backgroundColor: '#1e293b',
+            borderRadius: '12px',
+            padding: '12px 16px',
+            display: 'flex',
+            gap: '8px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+            zIndex: 1000,
+          }}
+        >
+          {[
+            { shape: 'rectangle', icon: Square, label: 'Rectangle' },
+            { shape: 'circle', icon: Circle, label: 'Circle' },
+            { shape: 'diamond', icon: Diamond, label: 'Diamond' },
+            { shape: 'hexagon', icon: Hexagon, label: 'Hexagon' },
+            { shape: 'oval', icon: Circle, label: 'Oval' },
+            { shape: 'parallelogram', icon: Square, label: 'Parallelogram' },
+            { shape: 'trapezoid', icon: Square, label: 'Trapezoid' },
+          ].map(({ shape, icon: Icon, label }) => (
+            <button
+              key={shape}
+              onClick={() => {
+                // If a node is selected, change its shape
+                if (selectedNodeId) {
+                  handleShapeChange(selectedNodeId, shape);
+                }
+                // Set the active tool to use this shape for new nodes
+                // (This would require storing the current shape preference)
+              }}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                borderRadius: '6px',
+                padding: '8px',
+                color: '#94a3b8',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#334155';
+                e.currentTarget.style.color = '#ffffff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = '#94a3b8';
+              }}
+              title={label}
+            >
+              <Icon size={20} />
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Color Palette Toolbar - always visible at bottom */}
+      <div
+        style={{
+          position: 'fixed',
+          bottom: '24px',
+          right: '24px',
+          backgroundColor: '#1e293b',
+          borderRadius: '12px',
+          padding: '12px 16px',
+          display: 'flex',
+          gap: '8px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+          zIndex: 1000,
+        }}
+      >
+        {[
+          { color: '#3b82f6', label: 'Blue' },
+          { color: '#ef4444', label: 'Red' },
+          { color: '#10b981', label: 'Green' },
+          { color: '#f59e0b', label: 'Orange' },
+          { color: '#eab308', label: 'Yellow' },
+          { color: '#8b5cf6', label: 'Purple' },
+          { color: '#ec4899', label: 'Pink' },
+          { color: '#06b6d4', label: 'Cyan' },
+          { color: '#64748b', label: 'Gray' },
+          { color: '#1e293b', label: 'Dark' },
+        ].map(({ color, label }) => (
+          <button
+            key={color}
+            onClick={() => {
+              // If a node is selected, change its color
+              if (selectedNodeId) {
+                handleColorChange(selectedNodeId, color);
+              }
+              // Also update draw color for drawing tool
+              setDrawColor(color);
+            }}
+            style={{
+              width: '32px',
+              height: '32px',
+              backgroundColor: color,
+              border: '2px solid #334155',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.1)';
+              e.currentTarget.style.borderColor = '#ffffff';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.borderColor = '#334155';
+            }}
+            title={label}
+          />
+        ))}
       </div>
 
       {/* Context Menu */}
