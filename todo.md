@@ -137,3 +137,11 @@
 - [x] Add document viewer/download functionality
 - [ ] Add document management UI in platform detail view (component created, needs to be integrated into platform pages)
 
+
+
+## Flow Builder Terminology Updates
+- [x] Change "Create New Playbook" to "Create New Flow"
+- [x] Change "New Playbook" button to "New Flow"
+- [x] Add "System" as a Type option (alongside Playbook, Cadence, Workflow)
+- [x] Update all playbook-related text to flow-related text in Flow Builder
+

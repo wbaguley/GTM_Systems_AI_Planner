@@ -30,7 +30,7 @@ export default function PlaybookBuilder() {
   const [newPlaybook, setNewPlaybook] = useState({
     title: "",
     description: "",
-    type: "playbook" as "playbook" | "cadence" | "workflow",
+    type: "playbook" as "playbook" | "cadence" | "workflow" | "system",
     category: "",
   });
 
@@ -46,17 +46,17 @@ export default function PlaybookBuilder() {
       refetch();
       setLocation(`/playbook-builder/${result.id}`);
     } catch (error) {
-      console.error("Error creating playbook:", error);
+      console.error("Error creating flow:", error);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm("Are you sure you want to delete this playbook?")) {
+    if (confirm("Are you sure you want to delete this flow?")) {
       try {
         await deleteMutation.mutateAsync({ id });
         refetch();
       } catch (error) {
-        console.error("Error deleting playbook:", error);
+        console.error("Error deleting flow:", error);
       }
     }
   };
@@ -92,7 +92,7 @@ export default function PlaybookBuilder() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading playbooks...</p>
+          <p className="text-muted-foreground">Loading flows...</p>
         </div>
       </div>
     );
@@ -112,12 +112,12 @@ export default function PlaybookBuilder() {
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              New Playbook
+              New Flow
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create New Playbook</DialogTitle>
+              <DialogTitle>Create New Flow</DialogTitle>
               <DialogDescription>
                 Start building a new workflow, cadence, or implementation guide
               </DialogDescription>
@@ -142,7 +142,7 @@ export default function PlaybookBuilder() {
                   onChange={(e) =>
                     setNewPlaybook({ ...newPlaybook, description: e.target.value })
                   }
-                  placeholder="Brief description of this playbook..."
+                  placeholder="Brief description of this flow..."
                   rows={3}
                 />
               </div>
@@ -161,6 +161,7 @@ export default function PlaybookBuilder() {
                     <SelectItem value="playbook">Playbook</SelectItem>
                     <SelectItem value="cadence">Cadence</SelectItem>
                     <SelectItem value="workflow">Workflow</SelectItem>
+                    <SelectItem value="system">System</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -196,7 +197,7 @@ export default function PlaybookBuilder() {
                 onClick={handleCreate}
                 disabled={!newPlaybook.title || createMutation.isPending}
               >
-                {createMutation.isPending ? "Creating..." : "Create Playbook"}
+                {createMutation.isPending ? "Creating..." : "Create Flow"}
               </Button>
             </DialogFooter>
           </DialogContent>

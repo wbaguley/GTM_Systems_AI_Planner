@@ -25,7 +25,7 @@ export const playbookRouter = router({
       z.object({
         title: z.string(),
         description: z.string().optional(),
-        type: z.enum(["playbook", "cadence", "workflow"]),
+        type: z.enum(["playbook", "cadence", "workflow", "system"]),
         category: z.string().optional(),
         isTemplate: z.boolean().optional(),
       })

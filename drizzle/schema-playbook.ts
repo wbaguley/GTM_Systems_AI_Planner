@@ -15,7 +15,7 @@ export const playbooks = mysqlTable("playbooks", {
   userId: varchar("user_id", { length: 255 }).notNull(),
   title: varchar("title", { length: 500 }).notNull(),
   description: text("description"),
-  type: varchar("type", { length: 50 }).notNull(), // 'playbook', 'cadence', 'workflow'
+  type: varchar("type", { length: 50 }).notNull(), // 'playbook', 'cadence', 'workflow', 'system'
   category: varchar("category", { length: 100 }), // 'onboarding', 'implementation', 'sales', 'marketing', 'custom'
   isTemplate: boolean("is_template").notNull().default(false),
   status: varchar("status", { length: 50 }).notNull().default("draft"), // 'draft', 'published', 'archived'
