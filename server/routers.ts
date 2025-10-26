@@ -14,6 +14,7 @@ import { aiUploadRouter } from "./routers-ai-upload";
 import { customFieldsRouter } from "./routers-custom-fields";
 import { usersRouter } from "./routers-users";
 import { sopRouter } from "./routes/sop";
+import { uploadRouter } from "./routes/upload";
 import { 
   getUserPlatforms, 
   getPlatformById, 
@@ -39,6 +40,7 @@ export const appRouter = router({
   platformDocuments: platformDocumentsRouter,
   users: usersRouter,
   sop: sopRouter,
+  upload: uploadRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

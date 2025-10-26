@@ -686,10 +686,10 @@
 9. [x] **Add secondary shape picker bar** - Bottom toolbar with all 7 shapes, appears when shape tool is active, fully functional
 10. [x] **Add color palette** - Bottom toolbar with 10 preset color swatches, fully functional with instant color changes
 10a. [x] **Fix selection state management** - Added onSelectionChange to track selected nodes for toolbar actions
-11. [IN PROGRESS] **Implement Line and Arrow tools** - Use ReactFlow edges for connecting shapes
+11. [x] **Implement Line and Arrow tools** - Click-to-connect mode using ReactFlow edges, straight lines and arrows with gray styling
 12. [x] **Implement Text tool** - Click-to-place text boxes with transparent background, dashed border, inline editing
 12a. [x] **Implement Sticky Note tool** - Yellow sticky notes with shadow, brown text, inline editing
-13. [ ] **Implement Image tool** - Add image upload capability
+13. [x] **Implement Image tool** - Image upload with file picker, S3 storage, display as nodes with object-fit cover
 14. [x] **Test page refresh persistence** - Nodes reload correctly with all properties (shape, color, position, size)
 15. [ ] **Comprehensive manual QA testing** - Test all interactions with real mouse/keyboard
 16. [ ] **Optimize whiteboard UX** - Make interactions feel natural like a real whiteboard

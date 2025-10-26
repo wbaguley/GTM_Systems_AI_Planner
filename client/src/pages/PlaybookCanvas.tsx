@@ -285,6 +285,14 @@ function ResizableNode({ id, data, selected }: NodeProps) {
           alignItems: "flex-start",
           textAlign: "left" as const,
         };
+      case "image":
+        return {
+          ...baseStyle,
+          backgroundColor: "transparent",
+          padding: "0",
+          overflow: "hidden" as const,
+          borderRadius: "8px",
+        };
       default:
         return { ...baseStyle, borderRadius: "8px" };
     }
@@ -307,7 +315,23 @@ function ResizableNode({ id, data, selected }: NodeProps) {
       />
       <Handle type="target" position={Position.Top} />
       <div style={getShapeStyle()}>
-        {isEditing ? (
+        {data.shape === "image" ? (
+          // Display image
+          label && label.startsWith('http') ? (
+            <img
+              src={label}
+              alt="Uploaded image"
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                borderRadius: "8px",
+              }}
+            />
+          ) : (
+            <div style={{ color: "#64748b", fontSize: "14px" }}>No image</div>
+          )
+        ) : isEditing ? (
           <input
             ref={inputRef}
             value={label}
@@ -548,6 +572,11 @@ function FlowCanvas() {
     width: number;
   }>>([]);
   const [drawColor, setDrawColor] = useState("#3b82f6");
+
+  // Connection mode state for Line/Arrow tools
+  const [connectionMode, setConnectionMode] = useState(false);
+  const [connectionSource, setConnectionSource] = useState<string | null>(null);
+  const [connectionType, setConnectionType] = useState<'line' | 'arrow'>('line');
   const [drawWidth, setDrawWidth] = useState(3);
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -560,6 +589,7 @@ function FlowCanvas() {
   const updateNodeMutation = trpc.playbook.updateNode.useMutation();
   const createNodeMutation = trpc.playbook.createNode.useMutation();
   const deleteNodeMutation = trpc.playbook.deleteNode.useMutation();
+  const uploadImageMutation = trpc.upload.uploadImage.useMutation();
 
   // Load playbook data
   React.useEffect(() => {
@@ -1397,7 +1427,12 @@ function FlowCanvas() {
 
           {/* Line Tool */}
           <button
-            onClick={() => setActiveTool('line')}
+            onClick={() => {
+              setActiveTool('line');
+              setConnectionMode(true);
+              setConnectionType('line');
+              setConnectionSource(null);
+            }}
             style={getButtonStyle('line')}
             onMouseEnter={(e) => handleButtonHover(e, 'line', true)}
             onMouseLeave={(e) => handleButtonHover(e, 'line', false)}
@@ -1410,7 +1445,12 @@ function FlowCanvas() {
 
           {/* Arrow Tool */}
           <button
-            onClick={() => setActiveTool('arrow')}
+            onClick={() => {
+              setActiveTool('arrow');
+              setConnectionMode(true);
+              setConnectionType('arrow');
+              setConnectionSource(null);
+            }}
             style={getButtonStyle('arrow')}
             onMouseEnter={(e) => handleButtonHover(e, 'arrow', true)}
             onMouseLeave={(e) => handleButtonHover(e, 'arrow', false)}
@@ -1487,8 +1527,58 @@ function FlowCanvas() {
           </button>
 
           {/* Image Tool */}
+          <input
+            type="file"
+            id="image-upload"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              
+              try {
+                // Read file as base64
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                  const base64 = event.target?.result as string;
+                  const base64Data = base64.split(',')[1]; // Remove data:image/...;base64, prefix
+                  
+                  // Upload via tRPC
+                  const result = await uploadImageMutation.mutateAsync({
+                    fileName: file.name,
+                    fileData: base64Data,
+                    contentType: file.type,
+                  });
+                  
+                  if (result.url) {
+                    // Create image node at center of viewport
+                    const position = reactFlowInstance?.project({ x: window.innerWidth / 2, y: window.innerHeight / 2 }) || { x: 0, y: 0 };
+                    
+                    createNodeMutation.mutate({
+                      playbookId: parseInt(id!),
+                      nodeType: 'note',
+                      position,
+                      color: 'transparent',
+                      shape: 'image',
+                      width: 300,
+                      height: 200,
+                      title: result.url, // Store image URL in title field
+                    });
+                  }
+                };
+                reader.readAsDataURL(file);
+              } catch (error) {
+                console.error('Image upload failed:', error);
+              }
+              
+              // Reset file input
+              e.target.value = '';
+            }}
+          />
           <button
-            onClick={() => setActiveTool('image')}
+            onClick={() => {
+              document.getElementById('image-upload')?.click();
+            }}
             style={getButtonStyle('image')}
             onMouseEnter={(e) => handleButtonHover(e, 'image', true)}
             onMouseLeave={(e) => handleButtonHover(e, 'image', false)}
@@ -1540,6 +1630,37 @@ function FlowCanvas() {
           onDragOver={onDragOver}
           onNodeContextMenu={onNodeContextMenu}
           onNodeDragStop={onNodeDragStop}
+          onNodeClick={(event, node) => {
+            // Handle connection mode for Line/Arrow tools
+            if (connectionMode) {
+              if (!connectionSource) {
+                // First click - set source node
+                setConnectionSource(node.id);
+              } else {
+                // Second click - create edge
+                const newEdge = {
+                  id: `edge-${Date.now()}`,
+                  source: connectionSource,
+                  target: node.id,
+                  type: connectionType === 'arrow' ? 'default' : 'straight',
+                  markerEnd: connectionType === 'arrow' ? {
+                    type: 'arrowclosed' as const,
+                    color: '#64748b',
+                  } : undefined,
+                  style: {
+                    stroke: '#64748b',
+                    strokeWidth: 2,
+                  },
+                };
+                setEdges((eds) => [...eds, newEdge]);
+                // Reset connection mode
+                setConnectionSource(null);
+                setConnectionMode(false);
+                setActiveTool('select');
+              }
+              event.stopPropagation();
+            }
+          }}
           onSelectionChange={(params) => {
             // Track selected node ID for toolbar actions
             if (params.nodes && params.nodes.length > 0) {
