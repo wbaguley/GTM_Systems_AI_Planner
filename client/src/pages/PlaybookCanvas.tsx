@@ -463,6 +463,7 @@ function FlowCanvas() {
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [activeTool, setActiveTool] = useState<string>("select"); // select, hand, rectangle, circle, line, arrow, text, sticky, draw, image
 
   // Fetch playbook data
   const { data: playbookData } = trpc.playbook.getComplete.useQuery(
@@ -770,6 +771,72 @@ function FlowCanvas() {
     [nodes]
   );
 
+  // Keyboard shortcuts
+  React.useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Only trigger if not typing in an input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      switch (e.key.toLowerCase()) {
+        case 'v':
+          setActiveTool('select');
+          break;
+        case 'h':
+          setActiveTool('hand');
+          break;
+        case 'r':
+          setActiveTool('rectangle');
+          break;
+        case 'c':
+          setActiveTool('circle');
+          break;
+        case 'l':
+          setActiveTool('line');
+          break;
+        case 'a':
+          setActiveTool('arrow');
+          break;
+        case 't':
+          setActiveTool('text');
+          break;
+        case 'n':
+          setActiveTool('sticky');
+          break;
+        case 'd':
+          setActiveTool('draw');
+          break;
+        case 'i':
+          setActiveTool('image');
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, []);
+
+  // Helper function to get button style based on active state
+  const getButtonStyle = (toolName: string) => ({
+    background: activeTool === toolName ? "#3b82f6" : "transparent",
+    border: "none",
+    borderRadius: "6px",
+    padding: "10px 12px",
+    color: activeTool === toolName ? "#ffffff" : "#94a3b8",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: "all 0.2s ease",
+  });
+
+  const handleButtonHover = (e: React.MouseEvent<HTMLButtonElement>, toolName: string, isEnter: boolean) => {
+    if (activeTool !== toolName) {
+      e.currentTarget.style.backgroundColor = isEnter ? "#334155" : "transparent";
+    }
+  };
+
   const shapeLibrary = [
     { type: "start", label: "Start", color: "#10b981" },
     { type: "end", label: "End", color: "#ef4444" },
@@ -806,23 +873,10 @@ function FlowCanvas() {
         >
           {/* Selection Tool */}
           <button
-            style={{
-              background: "transparent",
-              border: "none",
-              borderRadius: "6px",
-              padding: "10px 12px",
-              color: "#94a3b8",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#334155";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent";
-            }}
+            onClick={() => setActiveTool('select')}
+            style={getButtonStyle('select')}
+            onMouseEnter={(e) => handleButtonHover(e, 'select', true)}
+            onMouseLeave={(e) => handleButtonHover(e, 'select', false)}
             title="Select (V)"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -832,23 +886,10 @@ function FlowCanvas() {
 
           {/* Hand/Pan Tool */}
           <button
-            style={{
-              background: "transparent",
-              border: "none",
-              borderRadius: "6px",
-              padding: "10px 12px",
-              color: "#94a3b8",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#334155";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent";
-            }}
+            onClick={() => setActiveTool('hand')}
+            style={getButtonStyle('hand')}
+            onMouseEnter={(e) => handleButtonHover(e, 'hand', true)}
+            onMouseLeave={(e) => handleButtonHover(e, 'hand', false)}
             title="Hand (H)"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -864,23 +905,10 @@ function FlowCanvas() {
 
           {/* Square Tool */}
           <button
-            style={{
-              background: "transparent",
-              border: "none",
-              borderRadius: "6px",
-              padding: "10px 12px",
-              color: "#94a3b8",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#334155";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent";
-            }}
+            onClick={() => setActiveTool('rectangle')}
+            style={getButtonStyle('rectangle')}
+            onMouseEnter={(e) => handleButtonHover(e, 'rectangle', true)}
+            onMouseLeave={(e) => handleButtonHover(e, 'rectangle', false)}
             title="Rectangle (R)"
           >
             <Square size={20} />
@@ -888,23 +916,10 @@ function FlowCanvas() {
 
           {/* Circle Tool */}
           <button
-            style={{
-              background: "transparent",
-              border: "none",
-              borderRadius: "6px",
-              padding: "10px 12px",
-              color: "#94a3b8",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#334155";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent";
-            }}
+            onClick={() => setActiveTool('circle')}
+            style={getButtonStyle('circle')}
+            onMouseEnter={(e) => handleButtonHover(e, 'circle', true)}
+            onMouseLeave={(e) => handleButtonHover(e, 'circle', false)}
             title="Circle (C)"
           >
             <Circle size={20} />
@@ -912,23 +927,10 @@ function FlowCanvas() {
 
           {/* Line Tool */}
           <button
-            style={{
-              background: "transparent",
-              border: "none",
-              borderRadius: "6px",
-              padding: "10px 12px",
-              color: "#94a3b8",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#334155";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent";
-            }}
+            onClick={() => setActiveTool('line')}
+            style={getButtonStyle('line')}
+            onMouseEnter={(e) => handleButtonHover(e, 'line', true)}
+            onMouseLeave={(e) => handleButtonHover(e, 'line', false)}
             title="Line (L)"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -938,23 +940,10 @@ function FlowCanvas() {
 
           {/* Arrow Tool */}
           <button
-            style={{
-              background: "transparent",
-              border: "none",
-              borderRadius: "6px",
-              padding: "10px 12px",
-              color: "#94a3b8",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#334155";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent";
-            }}
+            onClick={() => setActiveTool('arrow')}
+            style={getButtonStyle('arrow')}
+            onMouseEnter={(e) => handleButtonHover(e, 'arrow', true)}
+            onMouseLeave={(e) => handleButtonHover(e, 'arrow', false)}
             title="Arrow (A)"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -968,25 +957,14 @@ function FlowCanvas() {
 
           {/* Text Tool */}
           <button
+            onClick={() => setActiveTool('text')}
             style={{
-              background: "transparent",
-              border: "none",
-              borderRadius: "6px",
-              padding: "10px 12px",
-              color: "#94a3b8",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              ...getButtonStyle('text'),
               fontSize: "18px",
               fontWeight: "bold",
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#334155";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent";
-            }}
+            onMouseEnter={(e) => handleButtonHover(e, 'text', true)}
+            onMouseLeave={(e) => handleButtonHover(e, 'text', false)}
             title="Text (T)"
           >
             T
@@ -994,23 +972,10 @@ function FlowCanvas() {
 
           {/* Sticky Note Tool */}
           <button
-            style={{
-              background: "transparent",
-              border: "none",
-              borderRadius: "6px",
-              padding: "10px 12px",
-              color: "#94a3b8",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#334155";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent";
-            }}
+            onClick={() => setActiveTool('sticky')}
+            style={getButtonStyle('sticky')}
+            onMouseEnter={(e) => handleButtonHover(e, 'sticky', true)}
+            onMouseLeave={(e) => handleButtonHover(e, 'sticky', false)}
             title="Sticky Note (N)"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -1023,23 +988,10 @@ function FlowCanvas() {
 
           {/* Drawing Tool */}
           <button
-            style={{
-              background: "transparent",
-              border: "none",
-              borderRadius: "6px",
-              padding: "10px 12px",
-              color: "#94a3b8",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#334155";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent";
-            }}
+            onClick={() => setActiveTool('draw')}
+            style={getButtonStyle('draw')}
+            onMouseEnter={(e) => handleButtonHover(e, 'draw', true)}
+            onMouseLeave={(e) => handleButtonHover(e, 'draw', false)}
             title="Draw (D)"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1050,25 +1002,12 @@ function FlowCanvas() {
             </svg>
           </button>
 
-          {/* Image Upload Tool */}
+          {/* Image Tool */}
           <button
-            style={{
-              background: "transparent",
-              border: "none",
-              borderRadius: "6px",
-              padding: "10px 12px",
-              color: "#94a3b8",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#334155";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent";
-            }}
+            onClick={() => setActiveTool('image')}
+            style={getButtonStyle('image')}
+            onMouseEnter={(e) => handleButtonHover(e, 'image', true)}
+            onMouseLeave={(e) => handleButtonHover(e, 'image', false)}
             title="Image (I)"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1080,23 +1019,10 @@ function FlowCanvas() {
 
           {/* More Tools */}
           <button
-            style={{
-              background: "transparent",
-              border: "none",
-              borderRadius: "6px",
-              padding: "10px 12px",
-              color: "#94a3b8",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#334155";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent";
-            }}
+            onClick={() => setActiveTool('more')}
+            style={getButtonStyle('more')}
+            onMouseEnter={(e) => handleButtonHover(e, 'more', true)}
+            onMouseLeave={(e) => handleButtonHover(e, 'more', false)}
             title="More tools"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

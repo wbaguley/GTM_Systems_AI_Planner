@@ -462,3 +462,39 @@
 - [x] Keep separators horizontal between tool groups
 
 
+
+
+
+## Flow Builder - Toolbar Functionality & Hotkeys (User Request)
+
+### Implement Tool Click Handlers
+- [x] Add onClick handlers for all toolbar buttons
+- [x] Implement active state styling (highlight selected tool)
+- [x] Add state management for current selected tool
+- [x] Show visual feedback when tool is active
+
+### Implement Keyboard Shortcuts (Hotkeys)
+- [x] V - Selection tool
+- [x] H - Hand/Pan tool
+- [x] R - Rectangle tool
+- [x] C - Circle tool
+- [x] L - Line tool
+- [x] A - Arrow tool
+- [x] T - Text tool
+- [x] N - Sticky Note tool
+- [x] D - Draw/Freehand tool
+- [x] I - Image upload tool
+
+### Implement Tool Functionality
+- [ ] Selection tool - allow selecting and moving nodes
+- [ ] Hand tool - pan/move canvas
+- [ ] Rectangle tool - click to create rectangle node
+- [ ] Circle tool - click to create circle node
+- [ ] Line tool - click and drag to create connection
+- [ ] Arrow tool - click and drag to create arrow connection
+- [ ] Text tool - click to create text node
+- [ ] Sticky Note tool - click to create sticky note
+- [ ] Draw tool - freehand drawing on canvas
+- [ ] Image tool - upload and place image
+
+
