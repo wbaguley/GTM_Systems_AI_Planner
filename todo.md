@@ -395,3 +395,40 @@
 - [ ] Test on different screen sizes
 
 
+
+
+
+## Flow Builder - Bug Fixes and New Features (User Reported)
+
+### Bugs to Fix
+- [x] Fix diamond shape rendering (not displaying correctly)
+- [x] Fix context menu not closing when clicking outside
+
+### Shape Library Redesign
+- [x] Match ClickUp's exact styling with darker background (#1e293b or similar)
+- [x] Update shape items to have proper spacing and hover effects
+- [x] Ensure rounded corners and proper padding match ClickUp
+
+### Bottom Toolbar Implementation
+- [x] Add bottom toolbar with ClickUp-style tools
+- [x] Add selection/cursor tool
+- [x] Add square/rectangle creation tool
+- [x] Add line/connector creation tool
+- [x] Add text tool
+- [x] Add sticky note tool
+- [x] Add image upload tool
+- [x] Add drawing/freehand tool
+- [x] Add other ClickUp whiteboard tools from screenshot
+
+### Keyboard Shortcuts
+- [ ] Implement hotkeys for shape selection
+- [ ] Update cursor to indicate current tool mode
+- [ ] Add visual feedback when tool is selected
+
+### Drawing and Sticky Notes
+- [ ] Implement freehand drawing tool
+- [ ] Add sticky note component with different colors
+- [ ] Ensure sticky notes are draggable and editable
+- [ ] Add sticky note to shape library
+
+

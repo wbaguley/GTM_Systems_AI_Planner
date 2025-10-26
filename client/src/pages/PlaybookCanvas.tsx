@@ -57,8 +57,17 @@ function ContextMenu({ x, y, onClose, onAction }: ContextMenuProps) {
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    // Add slight delay to prevent immediate closing from the right-click that opened it
+    const timeoutId = setTimeout(() => {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("click", handleClickOutside);
+    }, 100);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("click", handleClickOutside);
+    };
   }, [onClose]);
 
   const menuItems = [
@@ -206,7 +215,7 @@ function ResizableNode({ id, data, selected }: NodeProps) {
       case "circle":
         return { ...baseStyle, borderRadius: "50%" };
       case "diamond":
-        return { ...baseStyle, transform: "rotate(45deg)" };
+        return { ...baseStyle, clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)" };
       case "hexagon":
         return { ...baseStyle, clipPath: "polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)" };
       case "oval":
@@ -253,12 +262,12 @@ function ResizableNode({ id, data, selected }: NodeProps) {
               fontWeight: 500,
               textAlign: "center",
               width: "100%",
-              transform: data.shape === "diamond" || data.shape === "parallelogram" ? "skewX(20deg)" : "none",
+              transform: data.shape === "parallelogram" ? "skewX(20deg)" : "none",
             }}
           />
         ) : (
           <span style={{ 
-            transform: data.shape === "diamond" ? "rotate(-45deg)" : data.shape === "parallelogram" ? "skewX(20deg)" : "none" 
+            transform: data.shape === "parallelogram" ? "skewX(20deg)" : "none" 
           }}>
             {label}
           </span>
@@ -772,19 +781,27 @@ function FlowCanvas() {
 
   return (
     <div style={{ display: "flex", height: "100vh", width: "100%", backgroundColor: "#111827" }}>
-      {/* Shape Library Sidebar */}
+      {/* Shape Library Sidebar - ClickUp Style */}
       <div
         style={{
-          width: "250px",
-          backgroundColor: "#1f2937",
-          borderRight: "1px solid #374151",
-          padding: "16px",
+          width: "280px",
+          backgroundColor: "#1e293b",
+          borderRight: "none",
+          padding: "20px 16px",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
-        <h3 style={{ fontSize: "16px", fontWeight: 600, marginBottom: "16px", color: "#fff" }}>
+        <h3 style={{ 
+          fontSize: "14px", 
+          fontWeight: 600, 
+          marginBottom: "20px", 
+          color: "#f1f5f9",
+          letterSpacing: "0.5px",
+        }}>
           Shape Library
         </h3>
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           {shapeLibrary.map((shape) => (
             <div
               key={shape.type}
@@ -793,30 +810,51 @@ function FlowCanvas() {
                 event.dataTransfer.setData("application/reactflow", shape.type);
                 event.dataTransfer.effectAllowed = "move";
               }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#2d3e50";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#334155";
+              }}
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "12px",
-                padding: "12px",
-                backgroundColor: "#374151",
-                borderRadius: "8px",
-                border: "1px solid #4b5563",
+                gap: "14px",
+                padding: "14px 16px",
+                backgroundColor: "#334155",
+                borderRadius: "10px",
+                border: "none",
                 cursor: "grab",
+                transition: "background-color 0.2s ease",
               }}
             >
               <div
                 style={{
-                  width: "40px",
-                  height: "40px",
+                  width: "36px",
+                  height: "36px",
                   backgroundColor: shape.color,
-                  borderRadius: "6px",
+                  borderRadius: "8px",
+                  flexShrink: 0,
                 }}
               />
-              <span style={{ fontSize: "14px", fontWeight: 500, color: "#fff" }}>{shape.label}</span>
+              <span style={{ 
+                fontSize: "15px", 
+                fontWeight: 500, 
+                color: "#f1f5f9",
+                letterSpacing: "0.3px",
+              }}>
+                {shape.label}
+              </span>
             </div>
           ))}
         </div>
-        <p style={{ fontSize: "12px", color: "#9ca3af", marginTop: "16px" }}>
+        <p style={{ 
+          fontSize: "12px", 
+          color: "#94a3b8", 
+          marginTop: "20px",
+          textAlign: "center",
+          lineHeight: "1.5",
+        }}>
           Drag a shape to add it to your flow
         </p>
       </div>
@@ -899,6 +937,259 @@ function FlowCanvas() {
             </div>
           </Panel>
         </ReactFlow>
+      </div>
+
+      {/* Bottom Toolbar - ClickUp Style */}
+      <div
+        style={{
+          position: "fixed",
+          bottom: "20px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          backgroundColor: "#1e293b",
+          borderRadius: "12px",
+          padding: "8px 12px",
+          display: "flex",
+          gap: "4px",
+          boxShadow: "0 10px 25px rgba(0, 0, 0, 0.5)",
+          zIndex: 1000,
+        }}
+      >
+        {/* Selection Tool */}
+        <button
+          style={{
+            background: "transparent",
+            border: "none",
+            borderRadius: "6px",
+            padding: "10px 12px",
+            color: "#94a3b8",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          title="Select (V)"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z" />
+          </svg>
+        </button>
+
+        {/* Hand/Pan Tool */}
+        <button
+          style={{
+            background: "transparent",
+            border: "none",
+            borderRadius: "6px",
+            padding: "10px 12px",
+            color: "#94a3b8",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          title="Hand (H)"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0" />
+            <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2" />
+            <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8" />
+            <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
+          </svg>
+        </button>
+
+        {/* Separator */}
+        <div style={{ width: "1px", height: "32px", backgroundColor: "#334155", margin: "0 4px" }} />
+
+        {/* Square Tool */}
+        <button
+          style={{
+            background: "transparent",
+            border: "none",
+            borderRadius: "6px",
+            padding: "10px 12px",
+            color: "#94a3b8",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          title="Rectangle (R)"
+        >
+          <Square size={20} />
+        </button>
+
+        {/* Circle Tool */}
+        <button
+          style={{
+            background: "transparent",
+            border: "none",
+            borderRadius: "6px",
+            padding: "10px 12px",
+            color: "#94a3b8",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          title="Circle (C)"
+        >
+          <Circle size={20} />
+        </button>
+
+        {/* Line Tool */}
+        <button
+          style={{
+            background: "transparent",
+            border: "none",
+            borderRadius: "6px",
+            padding: "10px 12px",
+            color: "#94a3b8",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          title="Line (L)"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="5" y1="19" x2="19" y2="5" />
+          </svg>
+        </button>
+
+        {/* Arrow Tool */}
+        <button
+          style={{
+            background: "transparent",
+            border: "none",
+            borderRadius: "6px",
+            padding: "10px 12px",
+            color: "#94a3b8",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          title="Arrow (A)"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <polyline points="12 5 19 12 12 19" />
+          </svg>
+        </button>
+
+        {/* Separator */}
+        <div style={{ width: "1px", height: "32px", backgroundColor: "#334155", margin: "0 4px" }} />
+
+        {/* Text Tool */}
+        <button
+          style={{
+            background: "transparent",
+            border: "none",
+            borderRadius: "6px",
+            padding: "10px 12px",
+            color: "#94a3b8",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "18px",
+            fontWeight: "bold",
+          }}
+          title="Text (T)"
+        >
+          T
+        </button>
+
+        {/* Sticky Note Tool */}
+        <button
+          style={{
+            background: "transparent",
+            border: "none",
+            borderRadius: "6px",
+            padding: "10px 12px",
+            color: "#94a3b8",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          title="Sticky Note (N)"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M21 2H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h7l5 5V4c0-1.1-.9-2-2-2z" />
+          </svg>
+        </button>
+
+        {/* Separator */}
+        <div style={{ width: "1px", height: "32px", backgroundColor: "#334155", margin: "0 4px" }} />
+
+        {/* Drawing Tool */}
+        <button
+          style={{
+            background: "transparent",
+            border: "none",
+            borderRadius: "6px",
+            padding: "10px 12px",
+            color: "#94a3b8",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          title="Draw (D)"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 19l7-7 3 3-7 7-3-3z" />
+            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
+            <path d="M2 2l7.586 7.586" />
+            <circle cx="11" cy="11" r="2" />
+          </svg>
+        </button>
+
+        {/* Image Upload Tool */}
+        <button
+          style={{
+            background: "transparent",
+            border: "none",
+            borderRadius: "6px",
+            padding: "10px 12px",
+            color: "#94a3b8",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          title="Image (I)"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <polyline points="21 15 16 10 5 21" />
+          </svg>
+        </button>
+
+        {/* More Tools */}
+        <button
+          style={{
+            background: "transparent",
+            border: "none",
+            borderRadius: "6px",
+            padding: "10px 12px",
+            color: "#94a3b8",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          title="More tools"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="1" />
+            <circle cx="19" cy="12" r="1" />
+            <circle cx="5" cy="12" r="1" />
+          </svg>
+        </button>
       </div>
 
       {/* Context Menu */}
