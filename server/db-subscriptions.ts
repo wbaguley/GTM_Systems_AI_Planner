@@ -91,9 +91,9 @@ export async function upsertSubscriptionPlan(
  */
 export async function getUserSubscription(
   userId: number
-): Promise<(Subscription & { plan: SubscriptionPlan }) | undefined> {
+): Promise<(Subscription & { plan: SubscriptionPlan }) | null> {
   const db = await getDb();
-  if (!db) return undefined;
+  if (!db) return null;
 
   const result = await db
     .select({
@@ -114,7 +114,7 @@ export async function getUserSubscription(
     .orderBy(desc(subscriptions.createdAt))
     .limit(1);
 
-  if (result.length === 0) return undefined;
+  if (result.length === 0) return null;
 
   return {
     ...result[0].subscription,

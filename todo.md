@@ -98,3 +98,10 @@
 - [ ] Update pricing page to remove free tier messaging (can be done later)
 - [x] Add user management UI for admins to assign Testing role
 
+
+
+## Bugs to Fix
+- [x] Fix 4 errors showing in the application (subscription query returning undefined)
+- [x] Ensure owner has full access to all features without subscription requirement
+- [x] Add GTM Planetary logo to app icon and branding (logo uploaded, user needs to set in Settings → Customization)
+
