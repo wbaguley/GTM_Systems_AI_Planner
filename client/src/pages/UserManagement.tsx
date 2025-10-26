@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
-import { Loader2, Shield, User, TestTube } from "lucide-react";
+import { Loader2, Shield, User, TestTube, UserX, UserCheck, Crown } from "lucide-react";
 import { toast } from "sonner";
 
 export default function UserManagement() {
@@ -38,6 +38,36 @@ export default function UserManagement() {
     },
     onError: (error) => {
       toast.error(error.message || "Failed to update user role");
+    },
+  });
+
+  const deactivateUser = trpc.users.deactivateUser.useMutation({
+    onSuccess: () => {
+      toast.success("User deactivated successfully");
+      utils.users.getAllUsers.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to deactivate user");
+    },
+  });
+
+  const reactivateUser = trpc.users.reactivateUser.useMutation({
+    onSuccess: () => {
+      toast.success("User reactivated successfully");
+      utils.users.getAllUsers.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to reactivate user");
+    },
+  });
+
+  const transferGlobalAdmin = trpc.users.transferGlobalAdmin.useMutation({
+    onSuccess: () => {
+      toast.success("Global admin role transferred successfully");
+      utils.users.getAllUsers.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to transfer global admin role");
     },
   });
 
@@ -94,6 +124,12 @@ export default function UserManagement() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <p className="font-medium">{u.name || "Unnamed User"}</p>
+                      {u.isGlobalAdmin && (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                          <Crown className="h-3 w-3" />
+                          Global Admin
+                        </span>
+                      )}
                       <span
                         className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getRoleBadgeColor(
                           u.role
@@ -102,6 +138,11 @@ export default function UserManagement() {
                         {getRoleIcon(u.role)}
                         {u.role}
                       </span>
+                      {!u.isActive && (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                          Inactive
+                        </span>
+                      )}
                     </div>
                     <p className="text-sm text-muted-foreground">{u.email}</p>
                     <p className="text-xs text-muted-foreground mt-1">
@@ -109,7 +150,7 @@ export default function UserManagement() {
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
                     <Select
                       value={u.role}
                       onValueChange={(newRole) => {
@@ -118,7 +159,7 @@ export default function UserManagement() {
                           role: newRole as "viewer" | "standard" | "admin",
                         });
                       }}
-                      disabled={updateRole.isPending || u.id === user?.id}
+                      disabled={updateRole.isPending || u.id === user?.id || !u.isActive}
                     >
                       <SelectTrigger className="w-[140px]">
                         <SelectValue />
@@ -129,6 +170,52 @@ export default function UserManagement() {
                         <SelectItem value="admin">Admin</SelectItem>
                       </SelectContent>
                     </Select>
+
+                    {u.isGlobalAdmin && user?.isGlobalAdmin && u.id !== user?.id && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          if (confirm(`Transfer global admin role to ${u.name}? You will lose global admin privileges.`)) {
+                            transferGlobalAdmin.mutate({ newGlobalAdminId: u.id });
+                          }
+                        }}
+                        disabled={transferGlobalAdmin.isPending}
+                      >
+                        <Crown className="h-4 w-4 mr-1" />
+                        Transfer Admin
+                      </Button>
+                    )}
+
+                    {!u.isGlobalAdmin && u.id !== user?.id && (
+                      u.isActive ? (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => {
+                            if (confirm(`Deactivate ${u.name}? They will lose access to the system.`)) {
+                              deactivateUser.mutate({ userId: u.id });
+                            }
+                          }}
+                          disabled={deactivateUser.isPending}
+                        >
+                          <UserX className="h-4 w-4 mr-1" />
+                          Deactivate
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            reactivateUser.mutate({ userId: u.id });
+                          }}
+                          disabled={reactivateUser.isPending}
+                        >
+                          <UserCheck className="h-4 w-4 mr-1" />
+                          Reactivate
+                        </Button>
+                      )
+                    )}
                   </div>
                 </div>
               ))}

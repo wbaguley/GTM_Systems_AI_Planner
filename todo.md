@@ -231,3 +231,17 @@
 - [ ] Add "forgot password" functionality
 - [ ] Create user profile management
 
+
+
+## Enhanced User Management
+- [x] Add isActive field to users table for deactivation
+- [x] Add isGlobalAdmin field to users table
+- [ ] Create user invitation system with email invites
+- [x] Add user deactivation/removal functionality to UI
+- [x] Implement global admin protection (cannot remove/deactivate global admin)
+- [x] Add ability to transfer global admin role to another user
+- [x] Ensure there's always at least one global admin
+- [x] Add deactivate/reactivate user buttons with confirmation
+- [x] Add global admin badge and transfer button
+- [ ] Add invite user button and modal
+
