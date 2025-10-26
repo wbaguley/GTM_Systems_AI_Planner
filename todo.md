@@ -754,3 +754,10 @@
 - [ ] **Make CTAs actionable** - Focus on practical, implementable solutions
 - [ ] **Use operator language** - Talk like operators, not consultants
 
+
+
+
+## User Request (Oct 26, 2025)
+
+- [x] **Revert Flow Builder node colors** - Changed back to original colors (blue, red, green, orange, yellow, purple, pink, cyan, gray, dark) while keeping brand colors for rest of app
+
