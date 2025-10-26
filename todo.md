@@ -145,3 +145,11 @@
 - [x] Add "System" as a Type option (alongside Playbook, Cadence, Workflow)
 - [x] Update all playbook-related text to flow-related text in Flow Builder
 
+
+
+## Remaining Flow Builder Text Updates
+- [x] Change "No playbooks yet" to "No flows yet"
+- [x] Change "Create your first playbook" to "Create your first flow"
+- [x] Change "Create Your First Playbook" button to "Create Your First Flow"
+- [x] Change "implementation playbooks" to "implementation flows"
+

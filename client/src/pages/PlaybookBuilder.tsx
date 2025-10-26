@@ -105,7 +105,7 @@ export default function PlaybookBuilder() {
         <div>
           <h1 className="text-3xl font-bold">Flow Builder</h1>
           <p className="text-muted-foreground mt-1">
-            Create visual workflows, cadences, and implementation playbooks
+            Create visual workflows, cadences, and implementation flows
           </p>
         </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
@@ -273,14 +273,14 @@ export default function PlaybookBuilder() {
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-16">
             <Workflow className="h-16 w-16 text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No playbooks yet</h3>
+            <h3 className="text-xl font-semibold mb-2">No flows yet</h3>
             <p className="text-muted-foreground text-center mb-6 max-w-md">
-              Create your first playbook to start building visual workflows and
+              Create your first flow to start building visual workflows and
               implementation guides
             </p>
             <Button onClick={() => setIsCreateDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
-              Create Your First Playbook
+              Create Your First Flow
             </Button>
           </CardContent>
         </Card>
