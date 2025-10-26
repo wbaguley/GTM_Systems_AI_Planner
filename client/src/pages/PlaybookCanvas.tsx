@@ -512,6 +512,19 @@ function FlowCanvas() {
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
   const [tempNodeId, setTempNodeId] = useState<string | null>(null);
 
+  // Freehand drawing state
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [currentPath, setCurrentPath] = useState<{ x: number; y: number }[]>([]);
+  const [drawings, setDrawings] = useState<Array<{
+    id: string;
+    path: { x: number; y: number }[];
+    color: string;
+    width: number;
+  }>>([]);
+  const [drawColor, setDrawColor] = useState("#3b82f6");
+  const [drawWidth, setDrawWidth] = useState(3);
+  const svgRef = useRef<SVGSVGElement>(null);
+
   // Fetch playbook data
   const { data: playbookData } = trpc.playbook.getComplete.useQuery(
     { id: parseInt(id || "0") },
@@ -1112,6 +1125,92 @@ function FlowCanvas() {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, []);
 
+  // Freehand drawing event handlers
+  useEffect(() => {
+    if (activeTool !== 'draw' || !reactFlowInstance) return;
+
+    const svg = svgRef.current;
+    if (!svg) return;
+
+    const handleDrawStart = (e: MouseEvent) => {
+      // Prevent default to avoid triggering ReactFlow pan
+      e.stopPropagation();
+      
+      const rect = svg.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      setIsDrawing(true);
+      setCurrentPath([{ x, y }]);
+    };
+
+    const handleDrawMove = (e: MouseEvent) => {
+      if (!isDrawing) return;
+      
+      const rect = svg.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      setCurrentPath(prev => [...prev, { x, y }]);
+    };
+
+    const handleDrawEnd = () => {
+      if (!isDrawing || currentPath.length < 2) {
+        setIsDrawing(false);
+        setCurrentPath([]);
+        return;
+      }
+
+      // Save the completed drawing
+      const newDrawing = {
+        id: `drawing-${Date.now()}`,
+        path: currentPath,
+        color: drawColor,
+        width: drawWidth,
+      };
+      
+      setDrawings(prev => [...prev, newDrawing]);
+      setIsDrawing(false);
+      setCurrentPath([]);
+      
+      // TODO: Save to database
+      console.log('Drawing completed:', newDrawing);
+    };
+
+    svg.addEventListener('mousedown', handleDrawStart);
+    svg.addEventListener('mousemove', handleDrawMove);
+    svg.addEventListener('mouseup', handleDrawEnd);
+    svg.addEventListener('mouseleave', handleDrawEnd);
+
+    return () => {
+      svg.removeEventListener('mousedown', handleDrawStart);
+      svg.removeEventListener('mousemove', handleDrawMove);
+      svg.removeEventListener('mouseup', handleDrawEnd);
+      svg.removeEventListener('mouseleave', handleDrawEnd);
+    };
+  }, [activeTool, reactFlowInstance, isDrawing, currentPath, drawColor, drawWidth]);
+
+  // Helper function to convert path points to smooth SVG path string
+  const pathToSvgString = (points: { x: number; y: number }[]) => {
+    if (points.length === 0) return '';
+    if (points.length === 1) return `M ${points[0].x},${points[0].y}`;
+    
+    // Use quadratic Bezier curves for smooth drawing
+    let path = `M ${points[0].x},${points[0].y}`;
+    
+    for (let i = 1; i < points.length - 1; i++) {
+      const xc = (points[i].x + points[i + 1].x) / 2;
+      const yc = (points[i].y + points[i + 1].y) / 2;
+      path += ` Q ${points[i].x},${points[i].y} ${xc},${yc}`;
+    }
+    
+    // Add the last point
+    const lastPoint = points[points.length - 1];
+    path += ` L ${lastPoint.x},${lastPoint.y}`;
+    
+    return path;
+  };
+
   // Helper function to get button style based on active state
   const getButtonStyle = (toolName: string) => ({
     background: activeTool === toolName ? "#3b82f6" : "transparent",
@@ -1425,6 +1524,46 @@ function FlowCanvas() {
             </div>
           </Panel>
         </ReactFlow>
+
+        {/* SVG Drawing Overlay */}
+        <svg
+          ref={svgRef}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            pointerEvents: activeTool === 'draw' ? 'auto' : 'none',
+            zIndex: activeTool === 'draw' ? 10 : -1,
+          }}
+        >
+          {/* Render completed drawings */}
+          {drawings.map((drawing) => (
+            <path
+              key={drawing.id}
+              d={pathToSvgString(drawing.path)}
+              stroke={drawing.color}
+              strokeWidth={drawing.width}
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          ))}
+          
+          {/* Render current drawing in progress */}
+          {isDrawing && currentPath.length > 0 && (
+            <path
+              d={pathToSvgString(currentPath)}
+              stroke={drawColor}
+              strokeWidth={drawWidth}
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              opacity={0.8}
+            />
+          )}
+        </svg>
       </div>
 
       {/* Context Menu */}

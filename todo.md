@@ -679,7 +679,10 @@
 5. [x] **Test floating toolbar** - Appears on selection with shape/color pickers
 6. [x] **Test shape picker** - All 7 shapes available and shape change works
 7. [x] **Test color picker** - HexColorPicker opens and displays correctly
-8. [ ] **Implement freehand drawing** - Add true whiteboard drawing capability for Draw tool
+8. [x] **Implement freehand drawing** - SVG overlay layer working with smooth Bezier curves, real-time rendering, and drawing persistence in state
+8a. [ ] **Add drawing database persistence** - Save drawings to database and reload on page refresh
+8b. [ ] **Add drawing delete/erase** - Allow users to delete individual drawing strokes
+8c. [ ] **Add drawing color/width controls** - Toolbar controls for stroke color and width
 9. [ ] **Add secondary shape picker bar** - Bottom toolbar that appears when shape tool is selected
 10. [ ] **Add color palette** - Bottom toolbar with preset color swatches
 11. [ ] **Implement Line and Arrow tools** - Use ReactFlow edges instead of nodes
