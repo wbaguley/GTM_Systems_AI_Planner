@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Loader2, TrendingUp, Rocket, Waves, Target, Users, Zap, CheckCircle, Grid, ArrowRight } from "lucide-react";
 
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+const iconMap: Record<string, any> = {
   TrendingUp,
   Rocket,
   Waves,
@@ -54,22 +54,6 @@ export default function GTMFramework() {
     );
   }
 
-  if (!frameworks || frameworks.length === 0) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">GTM Framework Analyzer</h1>
-          <p className="text-muted-foreground mt-2">
-            Choose a go-to-market framework to assess your business strategy and receive expert AI-powered recommendations.
-          </p>
-        </div>
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">No frameworks available yet.</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <div>
@@ -80,8 +64,8 @@ export default function GTMFramework() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {frameworks.map((framework) => {
-          const IconComponent = iconMap[framework.icon || "Target"] || Target;
+        {frameworks?.map((framework) => {
+          const Icon = iconMap[framework.icon || "Target"];
           const colorClass = colorMap[framework.colorScheme || "blue"];
           
           return (
@@ -93,7 +77,7 @@ export default function GTMFramework() {
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className={`p-3 rounded-lg ${colorClass} border`}>
-                    <IconComponent className="h-6 w-6" />
+                    <Icon className="h-6 w-6" />
                   </div>
                   <Badge variant="outline">{framework.category}</Badge>
                 </div>
@@ -129,6 +113,12 @@ export default function GTMFramework() {
           );
         })}
       </div>
+
+      {frameworks && frameworks.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">No frameworks available yet.</p>
+        </div>
+      )}
     </div>
   );
 }
