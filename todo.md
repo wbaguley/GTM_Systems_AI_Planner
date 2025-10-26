@@ -524,3 +524,24 @@
 - [x] Add canvas click handler to detect tool placement clicks
 - [x] Create nodes at clicked position based on active tool
 
+
+
+
+## Flow Builder - Bug Fixes (User Reported)
+
+### Color Picker Not Working
+- [x] Fix color picker so clicking on colors actually changes the node color (handleColorChange updates state and database)
+- [x] Ensure color change is saved to database
+- [ ] Close color picker after color is selected (requires manual testing)
+
+### Shape Icon Not Updating
+- [x] Update shape picker icon to show current node shape (not always square)
+- [x] Icon now dynamically displays circle, diamond, hexagon, oval, parallelogram, trapezoid, or rectangle based on data.shape
+
+### Drag-to-Size When Placing Shapes
+- [x] Change placement behavior from click-to-place to click-and-drag
+- [x] On mouse down, create shape at small size (50x50)
+- [x] As user drags while holding button, increase shape size (onPaneMouseMove)
+- [x] On mouse up, finalize shape at dragged size and save to database
+- [x] This works for all shape tools (Rectangle, Circle, Line, Arrow, Text, Sticky Note, Draw, Image)
+

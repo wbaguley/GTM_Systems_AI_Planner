@@ -309,7 +309,14 @@ function ResizableNode({ id, data, selected }: NodeProps) {
                 gap: "4px",
               }}
             >
-              <Square size={16} />
+              {/* Show current shape icon */}
+              {data.shape === "circle" && <Circle size={16} />}
+              {data.shape === "diamond" && <Diamond size={16} />}
+              {data.shape === "hexagon" && <Hexagon size={16} />}
+              {data.shape === "oval" && <Circle size={16} />}
+              {data.shape === "parallelogram" && <Square size={16} style={{ transform: "skewX(-20deg)" }} />}
+              {data.shape === "trapezoid" && <Square size={16} />}
+              {(!data.shape || data.shape === "rectangle") && <Square size={16} />}
               <ChevronDown size={12} />
             </button>
             {showShapePicker && (
@@ -464,6 +471,11 @@ function FlowCanvas() {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [activeTool, setActiveTool] = useState<string>("select"); // select, hand, rectangle, circle, line, arrow, text, sticky, draw, image
+  
+  // Drag-to-size state
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
+  const [tempNodeId, setTempNodeId] = useState<string | null>(null);
 
   // Fetch playbook data
   const { data: playbookData } = trpc.playbook.getComplete.useQuery(
@@ -676,8 +688,8 @@ function FlowCanvas() {
     [reactFlowInstance, id]
   );
 
-  // Handle canvas click to place nodes based on active tool
-  const onPaneClick = useCallback(
+  // Handle mouse down to start drag-to-size
+  const onPaneMouseDown = useCallback(
     (event: React.MouseEvent) => {
       if (!reactFlowInstance || activeTool === 'select' || activeTool === 'hand') return;
 
@@ -685,6 +697,9 @@ function FlowCanvas() {
         x: event.clientX,
         y: event.clientY,
       });
+
+      setIsDragging(true);
+      setDragStart(position);
 
       // Map tools to node types and shapes
       const toolConfig: Record<string, { label: string; color: string; shape: string; nodeType: string }> = {
@@ -701,16 +716,18 @@ function FlowCanvas() {
       const config = toolConfig[activeTool];
       if (!config) return;
 
+      // Create small initial node
+      const tempId = `temp-${Date.now()}`;
       const newNode = {
-        id: `temp-${Date.now()}`,
+        id: tempId,
         type: "resizable",
         position,
         data: {
           label: config.label,
           color: config.color,
           shape: config.shape,
-          width: 200,
-          height: 100,
+          width: 50,
+          height: 50,
           onLabelChange: handleLabelChange,
           onColorChange: handleColorChange,
           onShapeChange: handleShapeChange,
@@ -721,23 +738,79 @@ function FlowCanvas() {
       };
 
       setNodes((nds) => nds.concat(newNode));
+      setTempNodeId(tempId);
+    },
+    [reactFlowInstance, activeTool, handleLabelChange, handleColorChange, handleShapeChange, handleResize, handleClone, handleDelete]
+  );
+
+  // Handle mouse move to resize temp node
+  const onPaneMouseMove = useCallback(
+    (event: React.MouseEvent) => {
+      if (!isDragging || !dragStart || !tempNodeId || !reactFlowInstance) return;
+
+      const currentPos = reactFlowInstance.screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+
+      const width = Math.max(50, Math.abs(currentPos.x - dragStart.x));
+      const height = Math.max(50, Math.abs(currentPos.y - dragStart.y));
+
+      setNodes((nds) =>
+        nds.map((node) =>
+          node.id === tempNodeId
+            ? { ...node, data: { ...node.data, width, height } }
+            : node
+        )
+      );
+    },
+    [isDragging, dragStart, tempNodeId, reactFlowInstance]
+  );
+
+  // Handle mouse up to finalize node
+  const onPaneMouseUp = useCallback(
+    (event: React.MouseEvent) => {
+      if (!isDragging || !tempNodeId) return;
+
+      setIsDragging(false);
+      setDragStart(null);
+
+      // Find the temp node to get its final size
+      const tempNode = nodes.find((n) => n.id === tempNodeId);
+      if (!tempNode) return;
+
+      // Map tools to node types
+      const toolConfig: Record<string, { nodeType: string }> = {
+        rectangle: { nodeType: "step" },
+        circle: { nodeType: "step" },
+        line: { nodeType: "step" },
+        arrow: { nodeType: "step" },
+        text: { nodeType: "step" },
+        sticky: { nodeType: "note" },
+        draw: { nodeType: "step" },
+        image: { nodeType: "step" },
+      };
+
+      const config = toolConfig[activeTool];
+      if (!config) return;
 
       // Create in database
       createNodeMutation.mutate({
         playbookId: parseInt(id || "0"),
-        title: newNode.data.label,
+        title: tempNode.data.label,
         nodeType: config.nodeType as any,
-        position,
-        color: newNode.data.color,
-        shape: newNode.data.shape,
-        width: newNode.data.width,
-        height: newNode.data.height,
+        position: tempNode.position,
+        color: tempNode.data.color,
+        shape: tempNode.data.shape,
+        width: tempNode.data.width,
+        height: tempNode.data.height,
       });
 
+      setTempNodeId(null);
       // Reset to select tool after placing
       setActiveTool('select');
     },
-    [reactFlowInstance, activeTool, id, handleLabelChange, handleColorChange, handleShapeChange, handleResize, handleClone, handleDelete]
+    [isDragging, tempNodeId, nodes, activeTool, id]
   );
 
   // Handle right-click context menu
@@ -1120,7 +1193,9 @@ function FlowCanvas() {
           panOnDrag={activeTool === 'hand' ? [1] : [2]}
           panOnScroll={true}
           zoomOnScroll={true}
-          onPaneClick={onPaneClick}
+          onPaneMouseDown={onPaneMouseDown}
+          onPaneMouseMove={onPaneMouseMove}
+          onPaneMouseUp={onPaneMouseUp}
         >
           <Background variant={BackgroundVariant.Dots} gap={16} size={1} color="#374151" />
           <Controls />
