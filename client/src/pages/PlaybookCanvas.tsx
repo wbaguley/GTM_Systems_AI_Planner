@@ -259,6 +259,32 @@ function ResizableNode({ id, data, selected }: NodeProps) {
         return { ...baseStyle, transform: "skewX(-20deg)" };
       case "trapezoid":
         return { ...baseStyle, clipPath: "polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%)" };
+      case "text":
+        return {
+          ...baseStyle,
+          backgroundColor: "transparent",
+          border: "2px dashed #64748b",
+          borderRadius: "4px",
+          color: "#e2e8f0",
+          fontSize: "16px",
+          padding: "8px 12px",
+          justifyContent: "flex-start",
+          alignItems: "flex-start",
+          textAlign: "left" as const,
+        };
+      case "sticky":
+        return {
+          ...baseStyle,
+          backgroundColor: "#fef3c7",
+          color: "#78350f",
+          borderRadius: "4px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+          fontSize: "14px",
+          padding: "12px",
+          justifyContent: "flex-start",
+          alignItems: "flex-start",
+          textAlign: "left" as const,
+        };
       default:
         return { ...baseStyle, borderRadius: "8px" };
     }
@@ -755,8 +781,8 @@ function FlowCanvas() {
         circle: { label: "", color: "#3b82f6", shape: "circle", nodeType: "step" },
         line: { label: "", color: "#3b82f6", shape: "rectangle", nodeType: "step" },
         arrow: { label: "", color: "#f59e0b", shape: "parallelogram", nodeType: "step" },
-        text: { label: "", color: "#3b82f6", shape: "rectangle", nodeType: "step" },
-        sticky: { label: "", color: "#eab308", shape: "rectangle", nodeType: "note" },
+        text: { label: "Click to edit text", color: "transparent", shape: "text", nodeType: "note" },
+        sticky: { label: "Sticky note", color: "#fef3c7", shape: "sticky", nodeType: "note" },
         draw: { label: "", color: "#8b5cf6", shape: "rectangle", nodeType: "step" },
         image: { label: "", color: "#3b82f6", shape: "rectangle", nodeType: "step" },
       };
