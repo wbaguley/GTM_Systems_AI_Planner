@@ -36,6 +36,13 @@
       "when": 1761438101856,
       "tag": "0004_conscious_zeigeist",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1761439700251,
+      "tag": "0005_wandering_rawhide_kid",
+      "breakpoints": true
     }
   ]
 }

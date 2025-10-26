@@ -103,7 +103,7 @@ export default function PlaybookBuilder() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Playbook Builder</h1>
+          <h1 className="text-3xl font-bold">Flow Builder</h1>
           <p className="text-muted-foreground mt-1">
             Create visual workflows, cadences, and implementation playbooks
           </p>

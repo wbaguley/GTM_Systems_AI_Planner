@@ -140,7 +140,7 @@ export function BillingSettings() {
                 <FeatureItem included>Platform tracking with AI upload</FeatureItem>
                 <FeatureItem included>Basic dashboard</FeatureItem>
                 <FeatureItem>GTM Framework builder</FeatureItem>
-                <FeatureItem>Playbook Builder</FeatureItem>
+                <FeatureItem>Flow Builder</FeatureItem>
                 <FeatureItem>ICP Assessment tools</FeatureItem>
                 <FeatureItem>Priority support</FeatureItem>
               </>
@@ -152,7 +152,7 @@ export function BillingSettings() {
                 <FeatureItem included>Export capabilities</FeatureItem>
                 <FeatureItem included>Email support</FeatureItem>
                 <FeatureItem>GTM Framework builder</FeatureItem>
-                <FeatureItem>Playbook Builder with automation</FeatureItem>
+                <FeatureItem>Flow Builder with automation</FeatureItem>
                 <FeatureItem>ICP Assessment tools</FeatureItem>
                 <FeatureItem>Priority support</FeatureItem>
               </>
@@ -161,7 +161,7 @@ export function BillingSettings() {
               <>
                 <FeatureItem included>Everything in Essentials</FeatureItem>
                 <FeatureItem included>GTM Framework builder</FeatureItem>
-                <FeatureItem included>Playbook Builder with automation</FeatureItem>
+                <FeatureItem included>Flow Builder with automation</FeatureItem>
                 <FeatureItem included>ICP Assessment tools</FeatureItem>
                 <FeatureItem included>Advanced analytics & reporting</FeatureItem>
                 <FeatureItem included>Priority support</FeatureItem>

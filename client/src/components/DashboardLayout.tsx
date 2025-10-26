@@ -32,7 +32,7 @@ const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/", feature: "dashboard" },
   { icon: Package, label: "Platforms", path: "/platforms", feature: "platforms" },
   { icon: Target, label: "GTM Framework", path: "/gtm-framework", feature: "gtm_framework", proOnly: true },
-  { icon: Workflow, label: "Playbook Builder", path: "/playbook-builder", feature: "playbook_builder", proOnly: true },
+  { icon: Workflow, label: "Flow Builder", path: "/playbook-builder", feature: "playbook_builder", proOnly: true },
   { icon: Users, label: "ICP Assessment", path: "/icp-assessment", feature: "icp_assessment", proOnly: true },
   { icon: Settings, label: "Settings", path: "/settings", feature: "settings" },
 ];

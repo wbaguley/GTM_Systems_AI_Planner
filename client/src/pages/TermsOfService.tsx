@@ -42,7 +42,7 @@ export default function TermsOfService() {
             <ul className="list-disc pl-6 space-y-2">
               <li><strong>Free:</strong> Limited access to platform tracking features</li>
               <li><strong>Essentials ($15/month):</strong> Full platform tracking with AI upload capabilities</li>
-              <li><strong>Pro ($30/month):</strong> All features including GTM Framework, Playbook Builder, and ICP Assessment</li>
+              <li><strong>Pro ($30/month):</strong> All features including GTM Framework, Flow Builder, and ICP Assessment</li>
             </ul>
 
             <h3 className="text-xl font-semibold mt-4">4.2 Payment</h3>

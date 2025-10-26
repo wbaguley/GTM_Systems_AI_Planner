@@ -48,7 +48,7 @@ export default function Pricing() {
   const proFeatures = [
     "Everything in Essentials",
     "GTM Framework builder",
-    "Playbook Builder with automation",
+    "Flow Builder with automation",
     "ICP Assessment tools",
     "Advanced analytics & reporting",
     "Priority support",

@@ -24,7 +24,8 @@ export * from "./schema-modules";
 export * from "./schema-gtm-framework";
 export * from './schema-playbook';
 export * from './schema-icp-assessment';
-export * from './schema-subscriptions';
+export * from "./schema-subscriptions";
+export * from "./schema-platform-documents";
 
 /**
  * Platforms table for tracking tech stack

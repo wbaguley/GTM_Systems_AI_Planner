@@ -111,3 +111,29 @@
 - [x] Hardcode GTM Planetary logo into the app (not via settings)
 - [x] Change app title to "GTM Planetary"
 
+
+
+## New Features to Implement
+
+### SOP Generator (Pro Feature)
+- [ ] Create SOP Generator page/module
+- [ ] Add file upload for mind maps, documents, PDFs
+- [ ] Integrate AI to analyze and convert uploads to SOPs
+- [ ] Add chat interface to edit and refine SOPs with AI
+- [ ] Add export functionality for generated SOPs
+- [ ] Add SOP library/storage for generated documents
+
+### Flow Builder (Rename from Playbook Builder)
+- [x] Rename "Playbook Builder" to "Flow Builder" throughout app
+- [ ] Keep existing playbook functionality
+- [ ] Add system architecture design capabilities
+- [ ] Add visual flow diagram builder
+- [ ] Add architecture component library
+
+### Platform Document Management
+- [x] Add document upload capability to each platform
+- [x] Support multiple file types (PDF, DOCX, images)
+- [x] Add document categories (SOPs, Contracts, Guides, etc.)
+- [x] Add document viewer/download functionality
+- [ ] Add document management UI in platform detail view (component created, needs to be integrated into platform pages)
+
