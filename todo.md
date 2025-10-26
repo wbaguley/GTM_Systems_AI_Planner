@@ -254,3 +254,16 @@
 - [x] Check database for missing seed data
 - [x] Create seed scripts for all assessment data
 
+
+
+## Bug Fixes - GTM Framework
+- [x] Fix "Element type is invalid" error on GTM Framework page (missing useState import)
+- [x] Check component exports and imports in GTM Framework page
+
+
+
+## Bug Fixes - Platform Logo
+- [ ] Fix platform logo not displaying when adding platform URL
+- [ ] Implement automatic logo fetching from website URL
+- [ ] Add fallback placeholder logo if fetch fails
+
