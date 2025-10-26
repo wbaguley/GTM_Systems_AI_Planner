@@ -647,3 +647,24 @@
 - [ ] Test shape persistence after page reload
 - [ ] Test color persistence after page reload
 
+
+
+
+## Flow Builder - CRITICAL BUGS REPORTED BY USER (Oct 26)
+
+- [x] **Incorrect Shape Rendering:** Fixed by changing node type from 'custom' to 'resizable' and setting shape to activeTool directly
+- [x] **Nodes Disappear:** Fixed by adding all handler functions (onLabelChange, onColorChange, etc.) to new nodes
+- [ ] **Incorrect Positioning:** Nodes are appearing in the center of the screen, not at the cursor's click position (needs testing)
+- [x] **No Actual Shape Rendering:** Fixed - getShapeStyle function now applies because node type is correct
+
+
+
+
+## Flow Builder - Whiteboard Feel (User Requirement)
+
+- [ ] **Freehand Drawing:** Implement true freehand drawing with mouse - user can draw lines/sketches freely on canvas
+- [ ] **Smooth Panning:** Make canvas panning feel natural and smooth (middle mouse button or hand tool)
+- [ ] **Natural Shape Creation:** Drag to create shapes with visual feedback during dragging
+- [ ] **Whiteboard-like Interaction:** Overall feel should mimic drawing on a physical whiteboard
+- [ ] **Immediate Visual Feedback:** Show shapes/lines as they're being drawn, not after release
+

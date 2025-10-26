@@ -963,14 +963,20 @@ function FlowCanvas() {
       // Create temporary node
       const newNode = {
         id: `temp-${Date.now()}`,
-        type: 'custom',
+        type: 'resizable',
         position,
         data: {
           label: activeTool.charAt(0).toUpperCase() + activeTool.slice(1),
-          shape: activeTool === 'rectangle' ? 'rectangle' : activeTool === 'circle' ? 'circle' : 'rectangle',
+          shape: activeTool,
           color: '#3b82f6',
           width: 50,
           height: 50,
+          onLabelChange: handleLabelChange,
+          onColorChange: handleColorChange,
+          onShapeChange: handleShapeChange,
+          onResize: handleResize,
+          onClone: handleClone,
+          onDelete: handleDelete,
         },
       };
 
