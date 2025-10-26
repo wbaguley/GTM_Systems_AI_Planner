@@ -277,17 +277,18 @@
 
 
 ## Flow Builder UX Improvements
-- [ ] Implement drag-and-drop from shape library to canvas
-- [ ] Add double-click to edit node title inline
-- [ ] Add right-click context menu on nodes
-- [ ] Add "Clone" option to context menu
-- [ ] Add "Change Node Type" option to context menu
-- [ ] Add "Change Color" option to context menu
-- [ ] Add "Change Shape" option to context menu
-- [ ] Remove or simplify the "Add New Node" modal
-- [ ] Make node creation workflow similar to ClickUp
-- [ ] Add export functionality with format options (PNG, JPEG, SVG, PDF)
-- [ ] Add export button to Flow Builder toolbar
+- [x] Implement drag-and-drop from shape library to canvas
+- [x] Add double-click to edit node title inline
+- [x] Add right-click context menu on nodes
+- [x] Add "Clone" option to context menu
+- [x] Add "Delete" option to context menu
+- [ ] Add "Change Node Type" option to context menu (future enhancement)
+- [ ] Add "Change Color" option to context menu (future enhancement)
+- [ ] Add "Change Shape" option to context menu (future enhancement)
+- [x] Remove the "Add New Node" modal (replaced with drag-and-drop)
+- [x] Make node creation workflow similar to ClickUp (drag-and-drop + double-click edit)
+- [x] Add export functionality with format options (PNG, JPEG, SVG)
+- [x] Add export dropdown button to Flow Builder toolbar
 
 ## Dark/Light Mode
 - [x] Add theme toggle to Settings page
