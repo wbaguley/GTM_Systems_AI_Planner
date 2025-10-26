@@ -693,3 +693,10 @@
 15. [ ] **Comprehensive manual QA testing** - Test all interactions with real mouse/keyboard
 16. [ ] **Optimize whiteboard UX** - Make interactions feel natural like a real whiteboard
 
+
+
+## User-Requested Changes (Oct 26, 2025)
+
+- [x] **Add Eraser tool** - Tool to delete individual drawing strokes by clicking on them (with keyboard shortcut 'E')
+- [x] **Remove default node labels** - New nodes now start with empty text instead of "Rectangle", "Circle", etc.
+

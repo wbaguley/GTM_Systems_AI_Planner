@@ -751,14 +751,14 @@ function FlowCanvas() {
 
       // Map tools to node types and shapes
       const toolConfig: Record<string, { label: string; color: string; shape: string; nodeType: string }> = {
-        rectangle: { label: "Rectangle", color: "#3b82f6", shape: "rectangle", nodeType: "step" },
-        circle: { label: "Circle", color: "#3b82f6", shape: "circle", nodeType: "step" },
-        line: { label: "Line", color: "#3b82f6", shape: "rectangle", nodeType: "step" },
-        arrow: { label: "Arrow", color: "#f59e0b", shape: "parallelogram", nodeType: "step" },
-        text: { label: "Text", color: "#3b82f6", shape: "rectangle", nodeType: "step" },
-        sticky: { label: "Note", color: "#eab308", shape: "rectangle", nodeType: "note" },
-        draw: { label: "Drawing", color: "#8b5cf6", shape: "rectangle", nodeType: "step" },
-        image: { label: "Image", color: "#3b82f6", shape: "rectangle", nodeType: "step" },
+        rectangle: { label: "", color: "#3b82f6", shape: "rectangle", nodeType: "step" },
+        circle: { label: "", color: "#3b82f6", shape: "circle", nodeType: "step" },
+        line: { label: "", color: "#3b82f6", shape: "rectangle", nodeType: "step" },
+        arrow: { label: "", color: "#f59e0b", shape: "parallelogram", nodeType: "step" },
+        text: { label: "", color: "#3b82f6", shape: "rectangle", nodeType: "step" },
+        sticky: { label: "", color: "#eab308", shape: "rectangle", nodeType: "note" },
+        draw: { label: "", color: "#8b5cf6", shape: "rectangle", nodeType: "step" },
+        image: { label: "", color: "#3b82f6", shape: "rectangle", nodeType: "step" },
       };
 
       const config = toolConfig[activeTool];
@@ -1115,6 +1115,9 @@ function FlowCanvas() {
         case 'd':
           setActiveTool('draw');
           break;
+        case 'e':
+          setActiveTool('eraser');
+          break;
         case 'i':
           setActiveTool('image');
           break;
@@ -1189,6 +1192,53 @@ function FlowCanvas() {
       svg.removeEventListener('mouseleave', handleDrawEnd);
     };
   }, [activeTool, reactFlowInstance, isDrawing, currentPath, drawColor, drawWidth]);
+
+  // Eraser event handlers
+  useEffect(() => {
+    if (activeTool !== 'eraser' || !reactFlowInstance) return;
+
+    const svg = svgRef.current;
+    if (!svg) return;
+
+    const handleEraserClick = (e: MouseEvent) => {
+      e.stopPropagation();
+      
+      const rect = svg.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+      
+      // Find and remove drawing that was clicked
+      // Check if click is near any path (within 10px tolerance)
+      const tolerance = 10;
+      
+      setDrawings(prev => {
+        const remainingDrawings = prev.filter(drawing => {
+          // Check if any point in the path is near the click
+          const isNearPath = drawing.path.some(point => {
+            const distance = Math.sqrt(
+              Math.pow(point.x - clickX, 2) + Math.pow(point.y - clickY, 2)
+            );
+            return distance < tolerance;
+          });
+          
+          if (isNearPath) {
+            console.log('Erased drawing:', drawing.id);
+            // TODO: Delete from database
+          }
+          
+          return !isNearPath;
+        });
+        
+        return remainingDrawings;
+      });
+    };
+
+    svg.addEventListener('click', handleEraserClick);
+
+    return () => {
+      svg.removeEventListener('click', handleEraserClick);
+    };
+  }, [activeTool, reactFlowInstance]);
 
   // Helper function to convert path points to smooth SVG path string
   const pathToSvgString = (points: { x: number; y: number }[]) => {
@@ -1396,6 +1446,20 @@ function FlowCanvas() {
             </svg>
           </button>
 
+          {/* Eraser Tool */}
+          <button
+            onClick={() => setActiveTool('eraser')}
+            style={getButtonStyle('eraser')}
+            onMouseEnter={(e) => handleButtonHover(e, 'eraser', true)}
+            onMouseLeave={(e) => handleButtonHover(e, 'eraser', false)}
+            title="Eraser (E)"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M7 21h10" />
+              <path d="M20.1 11.3L18.7 9.9 7.4 21.2c-.4.4-1 .4-1.4 0l-3.5-3.5c-.4-.4-.4-1 0-1.4L13.8 4.9l1.4-1.4c.4-.4 1-.4 1.4 0l3.5 3.5c.4.4.4 1 0 1.4z" />
+            </svg>
+          </button>
+
           {/* Image Tool */}
           <button
             onClick={() => setActiveTool('image')}
@@ -1542,8 +1606,9 @@ function FlowCanvas() {
             left: 0,
             width: '100%',
             height: '100%',
-            pointerEvents: activeTool === 'draw' ? 'auto' : 'none',
-            zIndex: activeTool === 'draw' ? 10 : -1,
+            pointerEvents: (activeTool === 'draw' || activeTool === 'eraser') ? 'auto' : 'none',
+            zIndex: (activeTool === 'draw' || activeTool === 'eraser') ? 10 : -1,
+            cursor: activeTool === 'eraser' ? 'pointer' : 'crosshair',
           }}
         >
           {/* Render completed drawings */}
