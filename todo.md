@@ -451,3 +451,14 @@
 - [ ] Implement tool functionality (rectangle creation, circle creation, line drawing, etc.)
 
 
+
+
+
+## Flow Builder - Vertical Toolbar Layout (User Request)
+
+- [x] Change toolbar layout from horizontal (left to right) to vertical (top to bottom)
+- [x] Stack all tool buttons vertically in the left sidebar
+- [x] Maintain proper spacing between tools
+- [x] Keep separators horizontal between tool groups
+
+

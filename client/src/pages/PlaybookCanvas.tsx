@@ -797,8 +797,9 @@ function FlowCanvas() {
           style={{
             backgroundColor: "#1e293b",
             borderRadius: "12px",
-            padding: "8px 12px",
+            padding: "8px 6px",
             display: "flex",
+            flexDirection: "column",
             gap: "4px",
             boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
           }}
@@ -859,7 +860,7 @@ function FlowCanvas() {
           </button>
 
           {/* Separator */}
-          <div style={{ width: "1px", height: "32px", backgroundColor: "#334155", margin: "0 4px" }} />
+          <div style={{ height: "1px", width: "100%", backgroundColor: "#334155", margin: "4px 0" }} />
 
           {/* Square Tool */}
           <button
@@ -963,7 +964,7 @@ function FlowCanvas() {
           </button>
 
           {/* Separator */}
-          <div style={{ width: "1px", height: "32px", backgroundColor: "#334155", margin: "0 4px" }} />
+          <div style={{ height: "1px", width: "100%", backgroundColor: "#334155", margin: "4px 0" }} />
 
           {/* Text Tool */}
           <button
@@ -1018,7 +1019,7 @@ function FlowCanvas() {
           </button>
 
           {/* Separator */}
-          <div style={{ width: "1px", height: "32px", backgroundColor: "#334155", margin: "0 4px" }} />
+          <div style={{ height: "1px", width: "100%", backgroundColor: "#334155", margin: "4px 0" }} />
 
           {/* Drawing Tool */}
           <button
