@@ -562,3 +562,15 @@
 - [x] Ensure all menu items are accessible regardless of where user right-clicks
 - [x] Add 10px padding from viewport edges
 
+
+
+
+## Flow Builder - Critical Bug (User Reported)
+
+### Cursor and Shape Creation Still Not Working
+- [ ] Cursor is still not changing to crosshair when shape tools are selected
+- [ ] Cannot create squares or circles by clicking and dragging
+- [ ] Debug why cursor styling is not being applied
+- [ ] Debug why drag-to-size functionality is not working
+- [ ] Test in browser to verify the issue
+

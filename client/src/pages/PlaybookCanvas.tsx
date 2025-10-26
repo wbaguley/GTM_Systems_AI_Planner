@@ -943,8 +943,19 @@ function FlowCanvas() {
     [nodes]
   );
 
+  //  // Force cursor change on ReactFlow pane
+  useEffect(() => {
+    const pane = document.querySelector('.react-flow__pane');
+    if (pane) {
+      const cursor = activeTool === 'select' ? 'default' : 
+                     activeTool === 'hand' ? 'grab' : 
+                     'crosshair';
+      (pane as HTMLElement).style.cursor = cursor;
+    }
+  }, [activeTool]);
+
   // Keyboard shortcuts
-  React.useEffect(() => {
+  useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       // Only trigger if not typing in an input
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
@@ -1240,6 +1251,11 @@ function FlowCanvas() {
           onPaneMouseDown={onPaneMouseDown}
           onPaneMouseMove={onPaneMouseMove}
           onPaneMouseUp={onPaneMouseUp}
+          style={{
+            cursor: activeTool === 'select' ? 'default' : 
+                    activeTool === 'hand' ? 'grab' : 
+                    'crosshair'
+          }}
         >
           <Background variant={BackgroundVariant.Dots} gap={16} size={1} color="#374151" />
           <Controls />
