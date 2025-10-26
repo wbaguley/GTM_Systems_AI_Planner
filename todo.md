@@ -432,3 +432,22 @@
 - [ ] Add sticky note to shape library
 
 
+
+
+
+## Flow Builder - Toolbar Repositioning (User Request)
+
+### Move Toolbar to Shape Library Location
+- [x] Remove the Shape Library sidebar completely
+- [x] Move the bottom toolbar to the left sidebar area (where Shape Library was)
+- [x] Position toolbar at the top of the left sidebar
+- [x] Keep toolbar horizontal layout
+- [x] Match ClickUp's exact positioning from screenshot
+
+### Implement Tool Click Handlers
+- [ ] Add click handlers for all toolbar buttons
+- [ ] Implement active state styling to show selected tool
+- [ ] Add cursor mode switching (selection, drawing, shape creation, etc.)
+- [ ] Implement tool functionality (rectangle creation, circle creation, line drawing, etc.)
+
+
