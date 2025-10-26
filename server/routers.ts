@@ -81,11 +81,11 @@ export const appRouter = router({
         balanceUsage: z.number().default(0),
         renewalDate: z.string().optional(),
         renewalDay: z.number().optional(),
-        isMyToolbelt: z.boolean().default(false),
+        toolkit: z.boolean().default(false),
         isInternalBusiness: z.boolean().default(false),
         isSolutionPartner: z.boolean().default(false),
-        notesForManus: z.string().optional(),
-        notesForStaff: z.string().optional(),
+        notesForAI: z.string().optional(),
+        internalnotes: z.string().optional(),
         customFieldValues: z.record(z.string(), z.string().nullable()).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
@@ -123,11 +123,11 @@ export const appRouter = router({
         balanceUsage: z.number().optional(),
         renewalDate: z.string().optional(),
         renewalDay: z.number().optional(),
-        isMyToolbelt: z.boolean().optional(),
+        toolkit: z.boolean().optional(),
         isInternalBusiness: z.boolean().optional(),
         isSolutionPartner: z.boolean().optional(),
-        notesForManus: z.string().optional(),
-        notesForStaff: z.string().optional(),
+        notesForAI: z.string().optional(),
+        internalnotes: z.string().optional(),
         customFieldValues: z.record(z.string(), z.string().nullable()).optional(),
       }))
       .mutation(async ({ ctx, input }) => {

@@ -193,7 +193,7 @@ async function migratePlatforms(userId: number) {
     },
     {
       moduleId,
-      fieldKey: "isMyToolbelt",
+      fieldKey: "toolkit",
       label: "My Toolbelt",
       fieldType: "checkbox" as any,
       isRequired: false,
@@ -223,7 +223,7 @@ async function migratePlatforms(userId: number) {
     },
     {
       moduleId,
-      fieldKey: "notesForManus",
+      fieldKey: "notesForAI",
       label: "Notes for Manus",
       fieldType: "longtext" as any,
       isRequired: false,
@@ -233,7 +233,7 @@ async function migratePlatforms(userId: number) {
     },
     {
       moduleId,
-      fieldKey: "notesForStaff",
+      fieldKey: "internalnotes",
       label: "Notes for GTM Planetary Staff",
       fieldType: "longtext" as any,
       isRequired: false,
@@ -274,11 +274,11 @@ async function migratePlatforms(userId: number) {
       balanceUsage: platform.balanceUsage?.toString() || "0",
       renewalDate: platform.renewalDate || "",
       renewalDay: platform.renewalDay?.toString() || "0",
-      isMyToolbelt: platform.isMyToolbelt ? "true" : "false",
+      toolkit: platform.toolkit ? "true" : "false",
       isInternalBusiness: platform.isInternalBusiness ? "true" : "false",
       isSolutionPartner: platform.isSolutionPartner ? "true" : "false",
-      notesForManus: platform.notesForManus || "",
-      notesForStaff: platform.notesForStaff || "",
+      notesForAI: platform.notesForAI || "",
+      internalnotes: platform.internalnotes || "",
     };
 
     await db.insert(moduleRecords).values({

@@ -59,3 +59,8 @@
 ## Bug Fixes
 - [x] Allow Essentials users full access to Settings (currently restricted)
 
+
+
+## Changes Requested
+- [x] Update Field Key naming: notesForManus → notesForAI, internal notes → internalnotes, Toolkit → toolkit
+

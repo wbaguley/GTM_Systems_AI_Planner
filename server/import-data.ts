@@ -17,11 +17,11 @@ interface ImportPlatform {
   balanceUsage: number;
   renewalDate?: string | null;
   renewalDay?: number | null;
-  isMyToolbelt: boolean;
+  toolkit: boolean;
   isInternalBusiness: boolean;
   isSolutionPartner: boolean;
-  notesForManus?: string | null;
-  notesForStaff?: string | null;
+  notesForAI?: string | null;
+  internalnotes?: string | null;
 }
 
 export async function importPlatformsFromJson(userId: number, jsonPath: string) {
@@ -54,11 +54,11 @@ export async function importPlatformsFromJson(userId: number, jsonPath: string) 
         balanceUsage: platformData.balanceUsage,
         renewalDate: platformData.renewalDate ? new Date(platformData.renewalDate) : undefined,
         renewalDay: platformData.renewalDay,
-        isMyToolbelt: platformData.isMyToolbelt,
+        toolkit: platformData.toolkit,
         isInternalBusiness: platformData.isInternalBusiness,
         isSolutionPartner: platformData.isSolutionPartner,
-        notesForManus: platformData.notesForManus,
-        notesForStaff: platformData.notesForStaff,
+        notesForAI: platformData.notesForAI,
+        internalnotes: platformData.internalnotes,
       });
       imported++;
     } catch (error) {

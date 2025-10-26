@@ -58,13 +58,13 @@ export const platforms = mysqlTable("platforms", {
   renewalDay: int("renewalDay"),
   
   // Categories
-  isMyToolbelt: boolean("isMyToolbelt").default(false),
+  toolkit: boolean("toolkit").default(false),
   isInternalBusiness: boolean("isInternalBusiness").default(false),
   isSolutionPartner: boolean("isSolutionPartner").default(false),
   
   // Notes
-  notesForManus: text("notesForManus"),
-  notesForStaff: text("notesForStaff"),
+  notesForAI: text("notesForAI"),
+  internalnotes: text("internalnotes"),
   
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

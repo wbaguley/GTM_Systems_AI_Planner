@@ -19,11 +19,11 @@ interface ExtractedPlatform {
   balanceUsage: number;
   renewalDate?: string;
   renewalDay?: number;
-  isMyToolbelt: boolean;
+  toolkit: boolean;
   isInternalBusiness: boolean;
   isSolutionPartner: boolean;
-  notesForManus?: string;
-  notesForStaff?: string;
+  notesForAI?: string;
+  internalnotes?: string;
 }
 
 async function callAI(
@@ -157,11 +157,11 @@ Each platform should have these fields:
 - balanceUsage (number): Balance or usage cost in cents
 - renewalDate (string, optional): ISO date format (YYYY-MM-DD)
 - renewalDay (number, optional): Day of month for renewal (1-31)
-- isMyToolbelt (boolean): Whether it's in "My Toolbelt"
+- toolkit (boolean): Whether it's in "My Toolbelt"
 - isInternalBusiness (boolean): Whether it's an internal business platform
 - isSolutionPartner (boolean): Whether GTM Planetary is a solution partner
-- notesForManus (string, optional): Notes for Manus
-- notesForStaff (string, optional): Notes for GTM Planetary staff
+- notesForAI (string, optional): Notes for AI
+- internalnotes (string, optional): Internal notes for GTM Planetary staff
 
 Here's the spreadsheet data:
 ${csvText}
@@ -202,11 +202,11 @@ Return ONLY a valid JSON array of platforms. Do not include any markdown formatt
               balanceUsage: platform.balanceUsage,
               renewalDate: platform.renewalDate ? new Date(platform.renewalDate) : undefined,
               renewalDay: platform.renewalDay,
-              isMyToolbelt: platform.isMyToolbelt,
+              toolkit: platform.toolkit,
               isInternalBusiness: platform.isInternalBusiness,
               isSolutionPartner: platform.isSolutionPartner,
-              notesForManus: platform.notesForManus,
-              notesForStaff: platform.notesForStaff,
+              notesForAI: platform.notesForAI,
+              internalnotes: platform.internalnotes,
             });
             imported++;
           } catch (error) {
