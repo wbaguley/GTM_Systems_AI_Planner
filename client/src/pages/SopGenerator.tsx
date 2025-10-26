@@ -5,14 +5,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload, FileText, Loader2, MessageSquare, Download, Trash2 } from "lucide-react";
+import { Upload, FileText, Loader2, MessageSquare, Download, Trash2, PenLine } from "lucide-react";
 import { toast } from "sonner";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function SopGenerator() {
+  const [mode, setMode] = useState<'upload' | 'describe'>('describe');
   const [isUploading, setIsUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [description, setDescription] = useState("");
+  const [sopTitle, setSopTitle] = useState("");
   const [currentSopId, setCurrentSopId] = useState<number | null>(null);
   const [chatMessage, setChatMessage] = useState("");
   const [isChatting, setIsChatting] = useState(false);
@@ -22,6 +25,21 @@ export default function SopGenerator() {
     { id: currentSopId! },
     { enabled: !!currentSopId }
   );
+  
+  const generateFromDescriptionMutation = trpc.sop.generateFromDescription.useMutation({
+    onSuccess: (data) => {
+      toast.success("SOP generated successfully!");
+      setDescription("");
+      setSopTitle("");
+      setIsUploading(false);
+      setCurrentSopId(data.sopId);
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(`Failed to generate SOP: ${error.message}`);
+      setIsUploading(false);
+    },
+  });
   
   const uploadMutation = trpc.sop.uploadAndGenerate.useMutation({
     onSuccess: (data) => {
@@ -71,6 +89,19 @@ export default function SopGenerator() {
       }
       setSelectedFile(file);
     }
+  };
+  
+  const handleGenerateFromDescription = async () => {
+    if (!description.trim()) {
+      toast.error("Please provide a description");
+      return;
+    }
+    
+    setIsUploading(true);
+    await generateFromDescriptionMutation.mutateAsync({
+      description: description.trim(),
+      title: sopTitle.trim() || undefined,
+    });
   };
   
   const handleUpload = async () => {
@@ -131,58 +162,131 @@ export default function SopGenerator() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">SOP Generator</h1>
         <p className="text-muted-foreground">
-          Upload documents, mind maps, or PDFs and let AI convert them into structured Standard Operating Procedures
+          Describe your process or upload documents to generate structured Standard Operating Procedures with AI
         </p>
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Upload Section */}
+        {/* Create SOP Section */}
         <div className="lg:col-span-1">
           <Card>
             <CardHeader>
-              <CardTitle>Upload Document</CardTitle>
+              <CardTitle>Create SOP</CardTitle>
               <CardDescription>
-                Supported formats: PDF, images, Word docs
+                Describe what you need or upload a document
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="file-upload">Select File</Label>
-                <Input
-                  id="file-upload"
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.doc,.docx"
-                  onChange={handleFileSelect}
-                  disabled={isUploading}
-                />
-                {selectedFile && (
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Selected: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
-                  </p>
-                )}
+              {/* Mode Toggle */}
+              <div className="flex gap-2 p-1 bg-muted rounded-lg">
+                <Button
+                  variant={mode === 'describe' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setMode('describe')}
+                  className="flex-1"
+                >
+                  <PenLine className="mr-2 h-4 w-4" />
+                  Describe
+                </Button>
+                <Button
+                  variant={mode === 'upload' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setMode('upload')}
+                  className="flex-1"
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload
+                </Button>
               </div>
               
-              <Button
-                onClick={handleUpload}
-                disabled={!selectedFile || isUploading}
-                className="w-full"
-              >
-                {isUploading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating SOP...
-                  </>
-                ) : (
-                  <>
-                    <Upload className="mr-2 h-4 w-4" />
-                    Upload & Generate SOP
-                  </>
-                )}
-              </Button>
+              {/* Describe Mode */}
+              {mode === 'describe' && (
+                <>
+                  <div>
+                    <Label htmlFor="sop-title">SOP Title (Optional)</Label>
+                    <Input
+                      id="sop-title"
+                      placeholder="e.g., Customer Onboarding Process"
+                      value={sopTitle}
+                      onChange={(e) => setSopTitle(e.target.value)}
+                      disabled={isUploading}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="sop-description">Description</Label>
+                    <Textarea
+                      id="sop-description"
+                      placeholder="Describe the process or procedure you want to document. Include key steps, roles, and any important details..."
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      disabled={isUploading}
+                      className="min-h-[200px]"
+                    />
+                  </div>
+                  
+                  <Button
+                    onClick={handleGenerateFromDescription}
+                    disabled={!description.trim() || isUploading}
+                    className="w-full"
+                  >
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Generating SOP...
+                      </>
+                    ) : (
+                      <>
+                        <PenLine className="mr-2 h-4 w-4" />
+                        Generate SOP
+                      </>
+                    )}
+                  </Button>
+                </>
+              )}
               
-              <p className="text-xs text-muted-foreground">
-                Max file size: 16MB. AI will analyze your document and create a structured SOP.
-              </p>
+              {/* Upload Mode */}
+              {mode === 'upload' && (
+                <>
+                  <div>
+                    <Label htmlFor="file-upload">Select File</Label>
+                    <Input
+                      id="file-upload"
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.doc,.docx"
+                      onChange={handleFileSelect}
+                      disabled={isUploading}
+                    />
+                    {selectedFile && (
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Selected: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
+                      </p>
+                    )}
+                  </div>
+                  
+                  <Button
+                    onClick={handleUpload}
+                    disabled={!selectedFile || isUploading}
+                    className="w-full"
+                  >
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Generating SOP...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="mr-2 h-4 w-4" />
+                        Upload & Generate SOP
+                      </>
+                    )}
+                  </Button>
+                  
+                  <p className="text-xs text-muted-foreground">
+                    Max file size: 16MB. Supported: PDF, images, Word docs
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
           

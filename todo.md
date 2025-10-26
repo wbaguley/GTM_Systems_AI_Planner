@@ -169,3 +169,11 @@
 - [x] Add feature gate to restrict SOP Generator to Pro users
 - [x] Add navigation link to SOP Generator in sidebar
 
+
+
+## SOP Generator Enhancement
+- [x] Add text description input option for SOP generation (alternative to file upload)
+- [x] Update UI to support both file upload and text description modes
+- [x] Add tRPC procedure for generating SOP from text description
+- [x] Update SOP Generator page to show tabs or toggle between upload and describe modes
+

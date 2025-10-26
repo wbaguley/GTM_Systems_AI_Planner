@@ -123,6 +123,75 @@ export const sopRouter = router({
       return sop;
     }),
   
+  // Generate SOP from text description
+  generateFromDescription: protectedProcedure
+    .input(z.object({
+      description: z.string(),
+      title: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      // Generate SOP from description
+      const response = await invokeLLM({
+        messages: [
+          {
+            role: "system",
+            content: `You are an expert at creating Standard Operating Procedures (SOPs). Create a well-structured SOP based on the user's description with:
+1. A clear title (if not provided)
+2. Purpose/Overview section
+3. Scope
+4. Step-by-step procedures with numbered steps
+5. Roles and responsibilities (if applicable)
+6. Required materials/tools (if applicable)
+7. Quality checks or success criteria
+
+Format the SOP in clean Markdown.`
+          },
+          {
+            role: "user",
+            content: `Create an SOP for: ${input.description}`
+          }
+        ]
+      });
+      
+      const rawContent = response.choices[0]?.message?.content;
+      let sopContent = "";
+      if (typeof rawContent === 'string') {
+        sopContent = rawContent;
+      } else if (Array.isArray(rawContent)) {
+        sopContent = rawContent.map(part => {
+          if ('text' in part) return part.text;
+          return '';
+        }).join('\n');
+      }
+      
+      // Extract title from the SOP or use provided title
+      const titleMatch = sopContent.match(/^#\s+(.+)$/m);
+      const finalTitle = input.title || (titleMatch ? titleMatch[1] : "New SOP");
+      
+      // Save to database
+      await createSop({
+        userId: ctx.user.id,
+        title: finalTitle,
+        content: sopContent,
+        chatHistory: JSON.stringify([
+          { role: "system", content: "SOP generated from user description." },
+          { role: "user", content: input.description },
+          { role: "assistant", content: sopContent }
+        ])
+      });
+      
+      // Get the newly created SOP
+      const sops = await getUserSops(ctx.user.id);
+      const newSop = sops[0]; // Most recent one
+      
+      return {
+        success: true,
+        sopId: newSop?.id || 0,
+        title: finalTitle,
+        content: sopContent
+      };
+    }),
+  
   // Upload file and generate initial SOP
   uploadAndGenerate: protectedProcedure
     .input(z.object({
