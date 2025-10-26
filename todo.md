@@ -498,3 +498,29 @@
 - [ ] Image tool - upload and place image
 
 
+
+
+
+## Flow Builder - Tool Placement Functionality (User Request)
+
+### Fix Mouse Button Behavior
+- [x] Change left mouse button from panning to placing nodes/shapes
+- [x] Change right mouse button (hold) to pan/drag canvas
+- [x] Only allow panning with left mouse when Hand tool is active
+
+### Implement Click-to-Place for Each Tool
+- [x] Rectangle tool - Click on canvas to create rectangle node at that position
+- [x] Circle tool - Click on canvas to create circle node at that position
+- [x] Line tool - Click on canvas to create line node at that position
+- [x] Arrow tool - Click on canvas to create arrow node at that position
+- [x] Text tool - Click on canvas to create text node at that position
+- [x] Sticky Note tool - Click on canvas to create sticky note at that position
+- [x] Draw tool - Click on canvas to create drawing node at that position
+- [x] Image tool - Click to create image node at that position
+
+### ReactFlow Configuration Updates
+- [x] Disable default panning with left mouse button
+- [x] Enable panning only with right mouse button or when Hand tool is active
+- [x] Add canvas click handler to detect tool placement clicks
+- [x] Create nodes at clicked position based on active tool
+

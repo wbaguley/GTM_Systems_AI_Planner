@@ -676,6 +676,70 @@ function FlowCanvas() {
     [reactFlowInstance, id]
   );
 
+  // Handle canvas click to place nodes based on active tool
+  const onPaneClick = useCallback(
+    (event: React.MouseEvent) => {
+      if (!reactFlowInstance || activeTool === 'select' || activeTool === 'hand') return;
+
+      const position = reactFlowInstance.screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+
+      // Map tools to node types and shapes
+      const toolConfig: Record<string, { label: string; color: string; shape: string; nodeType: string }> = {
+        rectangle: { label: "Rectangle", color: "#3b82f6", shape: "rectangle", nodeType: "step" },
+        circle: { label: "Circle", color: "#3b82f6", shape: "circle", nodeType: "step" },
+        line: { label: "Line", color: "#3b82f6", shape: "rectangle", nodeType: "step" },
+        arrow: { label: "Arrow", color: "#f59e0b", shape: "parallelogram", nodeType: "step" },
+        text: { label: "Text", color: "#3b82f6", shape: "rectangle", nodeType: "step" },
+        sticky: { label: "Note", color: "#eab308", shape: "rectangle", nodeType: "note" },
+        draw: { label: "Drawing", color: "#8b5cf6", shape: "rectangle", nodeType: "step" },
+        image: { label: "Image", color: "#3b82f6", shape: "rectangle", nodeType: "step" },
+      };
+
+      const config = toolConfig[activeTool];
+      if (!config) return;
+
+      const newNode = {
+        id: `temp-${Date.now()}`,
+        type: "resizable",
+        position,
+        data: {
+          label: config.label,
+          color: config.color,
+          shape: config.shape,
+          width: 200,
+          height: 100,
+          onLabelChange: handleLabelChange,
+          onColorChange: handleColorChange,
+          onShapeChange: handleShapeChange,
+          onResize: handleResize,
+          onClone: handleClone,
+          onDelete: handleDelete,
+        },
+      };
+
+      setNodes((nds) => nds.concat(newNode));
+
+      // Create in database
+      createNodeMutation.mutate({
+        playbookId: parseInt(id || "0"),
+        title: newNode.data.label,
+        nodeType: config.nodeType as any,
+        position,
+        color: newNode.data.color,
+        shape: newNode.data.shape,
+        width: newNode.data.width,
+        height: newNode.data.height,
+      });
+
+      // Reset to select tool after placing
+      setActiveTool('select');
+    },
+    [reactFlowInstance, activeTool, id, handleLabelChange, handleColorChange, handleShapeChange, handleResize, handleClone, handleDelete]
+  );
+
   // Handle right-click context menu
   const onNodeContextMenu = useCallback(
     (event: React.MouseEvent, node: Node) => {
@@ -1053,6 +1117,10 @@ function FlowCanvas() {
           nodesConnectable={true}
           elementsSelectable={true}
           selectNodesOnDrag={false}
+          panOnDrag={activeTool === 'hand' ? [1] : [2]}
+          panOnScroll={true}
+          zoomOnScroll={true}
+          onPaneClick={onPaneClick}
         >
           <Background variant={BackgroundVariant.Dots} gap={16} size={1} color="#374151" />
           <Controls />
