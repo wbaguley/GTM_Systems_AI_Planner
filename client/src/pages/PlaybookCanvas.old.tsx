@@ -1,864 +1,686 @@
-import { useCallback, useEffect, useState } from "react";
-import { useParams, useLocation } from "wouter";
+import React, { useState, useCallback, useRef } from "react";
 import ReactFlow, {
-  Background,
-  Controls,
-  MiniMap,
+  ReactFlowProvider,
   addEdge,
   useNodesState,
   useEdgesState,
+  Controls,
+  Background,
   Connection,
-  Edge,
   Node,
-  NodeTypes,
-  MarkerType,
-  EdgeTypes,
+  NodeProps,
   Handle,
   Position,
-  ConnectionMode,
+  Panel,
 } from "reactflow";
+import { NodeResizer } from "@reactflow/node-resizer";
+import { HexColorPicker } from "react-colorful";
 import "reactflow/dist/style.css";
-import "./playbook-canvas-styles.css";
+import "@reactflow/node-resizer/dist/style.css";
 import { trpc } from "../lib/trpc";
-import { Button } from "../components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
-import { Textarea } from "../components/ui/textarea";
+import { useParams } from "wouter";
 import {
-  ArrowLeft,
-  Save,
-  Plus,
-  FileDown,
-  Trash2,
-  Square,
+  Download,
   Circle,
+  Square,
   Diamond,
   Hexagon,
-  Triangle,
-  Star,
-  Sparkles,
-  StickyNote,
+  Copy,
+  Trash2,
+  ChevronDown,
 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "../components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../components/ui/select";
-import { toast } from "sonner";
-import { ScrollArea } from "../components/ui/scroll-area";
-import { Separator } from "../components/ui/separator";
+import { toPng, toJpeg, toSvg } from "html-to-image";
 
-// Custom node components with (+) connection handles
-const StartNode = ({ data }: any) => (
-  <div className="px-4 py-2 shadow-md rounded-full bg-green-500 text-white border-2 border-green-600 relative">
-    <Handle type="source" position={Position.Top} id="top" />
-    <Handle type="source" position={Position.Right} id="right" />
-    <Handle type="source" position={Position.Bottom} id="bottom" />
-    <Handle type="source" position={Position.Left} id="left" />
-    <div className="font-bold">Start</div>
-    <div className="text-xs">{data.label}</div>
-  </div>
-);
+// Custom Resizable Node Component
+function ResizableNode({ id, data, selected }: NodeProps) {
+  const [showToolbar, setShowToolbar] = useState(false);
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showShapePicker, setShowShapePicker] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [label, setLabel] = useState(data.label || "");
+  const inputRef = useRef<HTMLInputElement>(null);
 
-const StepNode = ({ data }: any) => (
-  <div className="px-4 py-3 shadow-md rounded-lg bg-blue-500 text-white border-2 border-blue-600 min-w-[200px] relative">
-    <Handle type="target" position={Position.Top} id="top" />
-    <Handle type="source" position={Position.Right} id="right" />
-    <Handle type="source" position={Position.Bottom} id="bottom" />
-    <Handle type="target" position={Position.Left} id="left" />
-    <div className="font-bold">{data.label}</div>
-    {data.description && <div className="text-xs mt-1">{data.description}</div>}
-    {data.duration && (
-      <div className="text-xs mt-1 opacity-75">⏱ {data.duration}</div>
-    )}
-  </div>
-);
+  const handleDoubleClick = () => {
+    setIsEditing(true);
+    setTimeout(() => inputRef.current?.focus(), 0);
+  };
 
-const DecisionNode = ({ data }: any) => (
-  <div className="relative w-32 h-32 flex items-center justify-center">
-    <Handle type="target" position={Position.Top} id="top" />
-    <Handle type="source" position={Position.Right} id="right" />
-    <Handle type="source" position={Position.Bottom} id="bottom" />
-    <Handle type="target" position={Position.Left} id="left" />
-    <div className="absolute inset-0 bg-yellow-500 border-2 border-yellow-600 shadow-md transform rotate-45"></div>
-    <div className="relative z-10 font-bold text-white text-center px-2">{data.label}</div>
-  </div>
-);
+  const handleBlur = () => {
+    setIsEditing(false);
+    if (data.onLabelChange) {
+      data.onLabelChange(id, label);
+    }
+  };
 
-const EndNode = ({ data }: any) => (
-  <div className="px-4 py-2 shadow-md rounded-full bg-red-500 text-white border-2 border-red-600 relative">
-    <Handle type="target" position={Position.Top} id="top" />
-    <Handle type="target" position={Position.Right} id="right" />
-    <Handle type="target" position={Position.Bottom} id="bottom" />
-    <Handle type="target" position={Position.Left} id="left" />
-    <div className="font-bold">End</div>
-    <div className="text-xs">{data.label}</div>
-  </div>
-);
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleBlur();
+    }
+  };
 
-const NoteNode = ({ data }: any) => (
-  <div className="px-4 py-3 shadow-md rounded-lg bg-yellow-100 text-gray-800 border-2 border-yellow-300 border-dashed min-w-[200px] relative">
-    <Handle type="target" position={Position.Top} id="top" />
-    <Handle type="source" position={Position.Right} id="right" />
-    <Handle type="target" position={Position.Bottom} id="bottom" />
-    <Handle type="target" position={Position.Left} id="left" />
-    <div className="font-bold text-sm">{data.label}</div>
-    {data.description && <div className="text-xs mt-1">{data.description}</div>}
-  </div>
-);
+  const getShapeStyle = () => {
+    const baseStyle: React.CSSProperties = {
+      width: "100%",
+      height: "100%",
+      backgroundColor: data.color || "#3b82f6",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "12px",
+      fontSize: "14px",
+      fontWeight: 500,
+      color: "#fff",
+      cursor: "pointer",
+    };
 
-const DelayNode = ({ data }: any) => (
-  <div className="px-4 py-3 shadow-md rounded bg-orange-500 text-white border-2 border-orange-600 min-w-[180px] relative">
-    <Handle type="target" position={Position.Top} id="top" />
-    <Handle type="source" position={Position.Right} id="right" />
-    <Handle type="source" position={Position.Bottom} id="bottom" />
-    <Handle type="target" position={Position.Left} id="left" />
-    <div className="font-bold">⏱ {data.label}</div>
-    {data.duration && <div className="text-xs mt-1">{data.duration}</div>}
-    {data.description && <div className="text-xs mt-1">{data.description}</div>}
-  </div>
-);
+    switch (data.shape) {
+      case "circle":
+        return { ...baseStyle, borderRadius: "50%" };
+      case "diamond":
+        return { ...baseStyle, transform: "rotate(45deg)" };
+      case "hexagon":
+        return { ...baseStyle, clipPath: "polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)" };
+      default:
+        return { ...baseStyle, borderRadius: "8px" };
+    }
+  };
 
-const nodeTypes: NodeTypes = {
-  start: StartNode,
-  step: StepNode,
-  decision: DecisionNode,
-  end: EndNode,
-  note: NoteNode,
-  delay: DelayNode,
+  return (
+    <div
+      style={{ width: data.width || 200, height: data.height || 100 }}
+      onClick={() => setShowToolbar(!showToolbar)}
+      onDoubleClick={handleDoubleClick}
+    >
+      <NodeResizer
+        isVisible={selected}
+        minWidth={100}
+        minHeight={60}
+        onResize={(event, params) => {
+          if (data.onResize) {
+            data.onResize(id, params.width, params.height);
+          }
+        }}
+      />
+      <Handle type="target" position={Position.Top} />
+      <div style={getShapeStyle()}>
+        {isEditing ? (
+          <input
+            ref={inputRef}
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            style={{
+              background: "transparent",
+              border: "none",
+              outline: "none",
+              color: "#fff",
+              fontSize: "14px",
+              fontWeight: 500,
+              textAlign: "center",
+              width: "100%",
+            }}
+          />
+        ) : (
+          <span style={{ transform: data.shape === "diamond" ? "rotate(-45deg)" : "none" }}>
+            {label}
+          </span>
+        )}
+      </div>
+      <Handle type="source" position={Position.Bottom} />
+
+      {/* Floating Toolbar */}
+      {selected && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: -60,
+            left: "50%",
+            transform: "translateX(-50%)",
+            backgroundColor: "#1f2937",
+            borderRadius: "8px",
+            padding: "8px",
+            display: "flex",
+            gap: "8px",
+            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+            zIndex: 1000,
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Shape Picker */}
+          <div style={{ position: "relative" }}>
+            <button
+              onClick={() => setShowShapePicker(!showShapePicker)}
+              style={{
+                background: "#374151",
+                border: "none",
+                borderRadius: "4px",
+                padding: "6px 8px",
+                color: "#fff",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+              }}
+            >
+              <Square size={16} />
+              <ChevronDown size={12} />
+            </button>
+            {showShapePicker && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: 40,
+                  left: 0,
+                  backgroundColor: "#1f2937",
+                  borderRadius: "8px",
+                  padding: "8px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "4px",
+                  minWidth: "120px",
+                }}
+              >
+                {[
+                  { shape: "rectangle", icon: Square, label: "Rectangle" },
+                  { shape: "circle", icon: Circle, label: "Circle" },
+                  { shape: "diamond", icon: Diamond, label: "Diamond" },
+                  { shape: "hexagon", icon: Hexagon, label: "Hexagon" },
+                ].map(({ shape, icon: Icon, label: shapeLabel }) => (
+                  <button
+                    key={shape}
+                    onClick={() => {
+                      if (data.onShapeChange) {
+                        data.onShapeChange(id, shape);
+                      }
+                      setShowShapePicker(false);
+                    }}
+                    style={{
+                      background: data.shape === shape ? "#4b5563" : "transparent",
+                      border: "none",
+                      borderRadius: "4px",
+                      padding: "8px",
+                      color: "#fff",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      textAlign: "left",
+                    }}
+                  >
+                    <Icon size={16} />
+                    <span style={{ fontSize: "14px" }}>{shapeLabel}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Color Picker */}
+          <div style={{ position: "relative" }}>
+            <button
+              onClick={() => setShowColorPicker(!showColorPicker)}
+              style={{
+                background: data.color || "#3b82f6",
+                border: "2px solid #fff",
+                borderRadius: "4px",
+                width: "32px",
+                height: "32px",
+                cursor: "pointer",
+              }}
+            />
+            {showColorPicker && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: 40,
+                  left: 0,
+                  zIndex: 1001,
+                }}
+              >
+                <HexColorPicker
+                  color={data.color || "#3b82f6"}
+                  onChange={(color) => {
+                    if (data.onColorChange) {
+                      data.onColorChange(id, color);
+                    }
+                  }}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Clone Button */}
+          <button
+            onClick={() => {
+              if (data.onClone) {
+                data.onClone(id);
+              }
+            }}
+            style={{
+              background: "#374151",
+              border: "none",
+              borderRadius: "4px",
+              padding: "6px 8px",
+              color: "#fff",
+              cursor: "pointer",
+            }}
+          >
+            <Copy size={16} />
+          </button>
+
+          {/* Delete Button */}
+          <button
+            onClick={() => {
+              if (data.onDelete) {
+                data.onDelete(id);
+              }
+            }}
+            style={{
+              background: "#dc2626",
+              border: "none",
+              borderRadius: "4px",
+              padding: "6px 8px",
+              color: "#fff",
+              cursor: "pointer",
+            }}
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const nodeTypes = {
+  resizable: ResizableNode,
 };
 
-// Default edge style with arrows
-const defaultEdgeOptions = {
-  type: 'default', // Changed from smoothstep to default for straighter lines
-  markerEnd: {
-    type: MarkerType.ArrowClosed,
-    width: 20,
-    height: 20,
-    color: '#64748b',
-  },
-  style: {
-    strokeWidth: 2,
-    stroke: '#64748b',
-  },
-  animated: false,
-};
-
-// Shape library items
-const shapeLibrary = [
-  { type: 'start', icon: Circle, label: 'Start', color: 'bg-green-500' },
-  { type: 'end', icon: Circle, label: 'End', color: 'bg-red-500' },
-  { type: 'step', icon: Square, label: 'Step', color: 'bg-blue-500' },
-  { type: 'decision', icon: Diamond, label: 'Decision', color: 'bg-yellow-500' },
-  { type: 'delay', icon: Circle, label: 'Delay/Wait', color: 'bg-orange-500' },
-  { type: 'note', icon: StickyNote, label: 'Note', color: 'bg-yellow-100' },
-];
-
-export default function PlaybookCanvas() {
-  const { id } = useParams<{ id: string }>();
-  const [, setLocation] = useLocation();
-  const playbookId = parseInt(id || "0");
-
+function FlowCanvas() {
+  const params = useParams();
+  const id = params.id;
+  const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
-  const [isAddNodeDialogOpen, setIsAddNodeDialogOpen] = useState(false);
-  const [showShapeLibrary, setShowShapeLibrary] = useState(true);
-  const [showAIAssistant, setShowAIAssistant] = useState(true);
-  const [aiSuggestion, setAiSuggestion] = useState("");
-  const [newNode, setNewNode] = useState({
-    type: "step" as "start" | "step" | "decision" | "end" | "note" | "delay",
-    label: "",
-    description: "",
-    duration: "",
-  });
-  const [edgeContextMenu, setEdgeContextMenu] = useState<{
-    edge: Edge | null;
-    x: number;
-    y: number;
-  } | null>(null);
-  const [isAIGenerateDialogOpen, setIsAIGenerateDialogOpen] = useState(false);
-  const [aiGenerateDescription, setAiGenerateDescription] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
 
-  const { data: playbookData, isLoading } = trpc.playbook.getComplete.useQuery(
-    { id: playbookId },
-    { enabled: playbookId > 0 }
+  // Fetch playbook data
+  const { data: playbookData } = trpc.playbook.getComplete.useQuery(
+    { id: parseInt(id || "0") },
+    { enabled: !!id }
   );
 
-  const createNodeMutation = trpc.playbook.createNode.useMutation();
   const updateNodeMutation = trpc.playbook.updateNode.useMutation();
-  const deleteNodeMutation = trpc.playbook.deleteNode.useMutation();
-  const createConnectionMutation = trpc.playbook.createConnection.useMutation();
-  const deleteConnectionMutation = trpc.playbook.deleteConnection.useMutation();
-  const generateAIMutation = trpc.playbook.generateWithAI.useMutation();
 
   // Load playbook data
-  useEffect(() => {
+  React.useEffect(() => {
     if (playbookData) {
-      const loadedNodes = playbookData.nodes.map((node: any) => ({
-        id: node.id.toString(),
-        type: node.nodeType,
-        position: JSON.parse(node.position as string),
-        data: {
-          label: node.title,
-          description: node.description,
-          duration: node.duration,
-          ...JSON.parse((node.data as string) || "{}"),
-        },
-      }));
+      const loadedNodes = playbookData.nodes.map((node: any) => {
+        // Parse position if it's a JSON string
+        let position = { x: 0, y: 0 };
+        if (node.position) {
+          position = typeof node.position === 'string' ? JSON.parse(node.position) : node.position;
+        }
+        
+        return {
+          id: node.id.toString(),
+          type: "resizable",
+          position,
+          data: {
+            label: node.title,
+            color: node.color || "#3b82f6",
+            shape: node.shape || "rectangle",
+            width: node.width || 200,
+            height: node.height || 100,
+            onLabelChange: handleLabelChange,
+            onColorChange: handleColorChange,
+            onShapeChange: handleShapeChange,
+            onResize: handleResize,
+            onClone: handleClone,
+            onDelete: handleDelete,
+          },
+        };
+      });
 
       const loadedEdges = playbookData.connections.map((conn: any) => ({
-        id: conn.id.toString(),
+        id: `e${conn.sourceNodeId}-${conn.targetNodeId}`,
         source: conn.sourceNodeId.toString(),
         target: conn.targetNodeId.toString(),
         label: conn.label,
-        ...defaultEdgeOptions,
       }));
 
       setNodes(loadedNodes);
       setEdges(loadedEdges);
     }
-  }, [playbookData, setNodes, setEdges]);
+  }, [playbookData]);
+
+  const handleLabelChange = useCallback((nodeId: string, newLabel: string) => {
+    setNodes((nds) =>
+      nds.map((node) =>
+        node.id === nodeId
+          ? { ...node, data: { ...node.data, label: newLabel } }
+          : node
+      )
+    );
+    updateNodeMutation.mutate({
+      id: parseInt(nodeId),
+      title: newLabel,
+    });
+  }, []);
+
+  const handleColorChange = useCallback((nodeId: string, newColor: string) => {
+    setNodes((nds) =>
+      nds.map((node) =>
+        node.id === nodeId
+          ? { ...node, data: { ...node.data, color: newColor } }
+          : node
+      )
+    );
+    updateNodeMutation.mutate({
+      id: parseInt(nodeId),
+      color: newColor,
+    });
+  }, []);
+
+  const handleShapeChange = useCallback((nodeId: string, newShape: string) => {
+    setNodes((nds) =>
+      nds.map((node) =>
+        node.id === nodeId
+          ? { ...node, data: { ...node.data, shape: newShape } }
+          : node
+      )
+    );
+    updateNodeMutation.mutate({
+      id: parseInt(nodeId),
+      shape: newShape,
+    });
+  }, []);
+
+  const handleResize = useCallback((nodeId: string, width: number, height: number) => {
+    setNodes((nds) =>
+      nds.map((node) =>
+        node.id === nodeId
+          ? { ...node, data: { ...node.data, width, height } }
+          : node
+      )
+    );
+    updateNodeMutation.mutate({
+      id: parseInt(nodeId),
+      width: Math.round(width),
+      height: Math.round(height),
+    });
+  }, []);
+
+  const handleClone = useCallback((nodeId: string) => {
+    const nodeToClone = nodes.find((n) => n.id === nodeId);
+    if (!nodeToClone) return;
+
+    const newNode = {
+      ...nodeToClone,
+      id: `temp-${Date.now()}`,
+      position: {
+        x: nodeToClone.position.x + 50,
+        y: nodeToClone.position.y + 50,
+      },
+    };
+
+    setNodes((nds) => [...nds, newNode]);
+  }, [nodes]);
+
+  const handleDelete = useCallback((nodeId: string) => {
+    setNodes((nds) => nds.filter((n) => n.id !== nodeId));
+    setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
+  }, []);
 
   const onConnect = useCallback(
-    async (params: Connection) => {
-      const newEdge = {
-        ...params,
-        id: `temp-${Date.now()}`,
-        sourceHandle: params.sourceHandle,
-        targetHandle: params.targetHandle,
-        ...defaultEdgeOptions,
-      } as Edge;
-      setEdges((eds) => addEdge(newEdge, eds));
-
-      try {
-        const result = await createConnectionMutation.mutateAsync({
-          playbookId,
-          sourceNodeId: parseInt(params.source!),
-          targetNodeId: parseInt(params.target!),
-          label: params.sourceHandle || undefined,
-        });
-        
-        // Update edge with real ID
-        setEdges((eds) =>
-          eds.map((e) =>
-            e.id === newEdge.id ? { ...e, id: result.id.toString() } : e
-          )
-        );
-        toast.success("Connection created");
-      } catch (error) {
-        toast.error("Failed to create connection");
-        setEdges((eds) => eds.filter((e) => e.id !== newEdge.id));
-      }
-    },
-    [playbookId, createConnectionMutation, setEdges]
-  );
-
-  const onEdgeContextMenu = useCallback(
-    (event: React.MouseEvent, edge: Edge) => {
-      event.preventDefault();
-      setEdgeContextMenu({
-        edge,
-        x: event.clientX,
-        y: event.clientY,
-      });
-    },
+    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
     []
   );
 
-  const handleDeleteEdge = useCallback(
-    async (edge: Edge) => {
-      try {
-        await deleteConnectionMutation.mutateAsync({
-          id: parseInt(edge.id),
-        });
-        setEdges((eds) => eds.filter((e) => e.id !== edge.id));
-        toast.success("Connection deleted");
-      } catch (error) {
-        toast.error("Failed to delete connection");
-      }
-      setEdgeContextMenu(null);
-    },
-    [deleteConnectionMutation, setEdges]
-  );
-
-  // Close context menu when clicking elsewhere
-  useEffect(() => {
-    const handleClick = () => setEdgeContextMenu(null);
-    document.addEventListener('click', handleClick);
-    return () => document.removeEventListener('click', handleClick);
+  const onDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
   }, []);
 
-  const handleAddNodeFromLibrary = (nodeType: string) => {
-    setNewNode({ ...newNode, type: nodeType as any });
-    setIsAddNodeDialogOpen(true);
-  };
+  const onDrop = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
 
-  const handleAddNode = async () => {
-    if (!newNode.label.trim()) {
-      toast.error("Please enter a node title");
-      return;
-    }
+      const type = event.dataTransfer.getData("application/reactflow");
+      if (!type || !reactFlowInstance) return;
 
-    try {
-      const position = {
-        x: Math.random() * 400 + 100,
-        y: Math.random() * 400 + 100,
-      };
-
-      const result = await createNodeMutation.mutateAsync({
-        playbookId,
-        nodeType: newNode.type,
-        title: newNode.label,
-        description: newNode.description,
-        duration: newNode.duration,
-        position,
+      const position = reactFlowInstance.screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
       });
 
-      const reactFlowNode: Node = {
-        id: result.id.toString(),
-        type: newNode.type,
+      const newNode: Node = {
+        id: `temp-${Date.now()}`,
+        type: "resizable",
         position,
         data: {
-          label: newNode.label,
-          description: newNode.description,
-          duration: newNode.duration,
+          label: type.charAt(0).toUpperCase() + type.slice(1),
+          color: getColorForType(type),
+          shape: "rectangle",
+          width: 200,
+          height: 100,
+          onLabelChange: handleLabelChange,
+          onColorChange: handleColorChange,
+          onShapeChange: handleShapeChange,
+          onResize: handleResize,
+          onClone: handleClone,
+          onDelete: handleDelete,
         },
       };
 
-      setNodes((nds) => [...nds, reactFlowNode]);
-      setIsAddNodeDialogOpen(false);
-      setNewNode({ type: "step", label: "", description: "", duration: "" });
-      toast.success("Node added");
-    } catch (error) {
-      toast.error("Failed to add node");
-    }
+      setNodes((nds) => nds.concat(newNode));
+    },
+    [reactFlowInstance, handleLabelChange, handleColorChange, handleShapeChange, handleResize, handleClone, handleDelete]
+  );
+
+  const getColorForType = (type: string) => {
+    const colors: Record<string, string> = {
+      start: "#10b981",
+      end: "#ef4444",
+      step: "#3b82f6",
+      decision: "#f59e0b",
+      delay: "#f97316",
+      note: "#eab308",
+    };
+    return colors[type] || "#3b82f6";
   };
 
-  const handleDeleteNode = async () => {
-    if (!selectedNode) return;
+  const exportFlow = useCallback(
+    async (format: "png" | "jpeg" | "svg") => {
+      if (!reactFlowWrapper.current) return;
 
-    try {
-      await deleteNodeMutation.mutateAsync({ id: parseInt(selectedNode.id) });
-      setNodes((nds) => nds.filter((n) => n.id !== selectedNode.id));
-      setEdges((eds) =>
-        eds.filter(
-          (e) => e.source !== selectedNode.id && e.target !== selectedNode.id
-        )
+      // Calculate bounds of all nodes
+      const nodesBounds = nodes.reduce(
+        (acc, node) => {
+          const width = node.data.width || 200;
+          const height = node.data.height || 100;
+          return {
+            minX: Math.min(acc.minX, node.position.x),
+            minY: Math.min(acc.minY, node.position.y),
+            maxX: Math.max(acc.maxX, node.position.x + width),
+            maxY: Math.max(acc.maxY, node.position.y + height),
+          };
+        },
+        { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
       );
-      setSelectedNode(null);
-      toast.success("Node deleted");
-    } catch (error) {
-      toast.error("Failed to delete node");
-    }
-  };
 
-  const handleNodeClick = useCallback((_: any, node: Node) => {
-    setSelectedNode(node);
-  }, []);
+      const padding = 50;
+      const width = nodesBounds.maxX - nodesBounds.minX + padding * 2;
+      const height = nodesBounds.maxY - nodesBounds.minY + padding * 2;
 
-  const handlePaneClick = useCallback(() => {
-    setSelectedNode(null);
-  }, []);
+      const exportFunc = format === "png" ? toPng : format === "jpeg" ? toJpeg : toSvg;
 
-  const handleGenerateAISuggestion = async () => {
-    setAiSuggestion("Analyzing your workflow...");
-    // TODO: Implement AI suggestion generation
-    setTimeout(() => {
-      setAiSuggestion(
-        "Based on your workflow, consider adding:\n\n" +
-        "1. A decision point after 'Define Objectives' to check if stakeholders are aligned\n" +
-        "2. A parallel process for documentation while development is ongoing\n" +
-        "3. A quality check step before the final deployment"
-      );
-    }, 1500);
-  };
-
-  const handleGenerateWithAI = async () => {
-    if (!aiGenerateDescription.trim()) {
-      toast.error("Please enter a workflow description");
-      return;
-    }
-
-    setIsGenerating(true);
-    try {
-      const result = await generateAIMutation.mutateAsync({
-        description: aiGenerateDescription,
-        category: playbookData?.playbook?.category || undefined,
-      });
-
-      // Create nodes from AI generation
-      const createdNodes: any[] = [];
-      for (const aiNode of result.nodes) {
-        const dbNode = await createNodeMutation.mutateAsync({
-          playbookId,
-          nodeType: aiNode.type,
-          title: aiNode.title,
-          description: aiNode.description,
-          duration: aiNode.duration,
-          position: JSON.stringify(aiNode.position) as any,
-        });
-        createdNodes.push({
-          id: dbNode.id.toString(),
-          type: aiNode.type,
-          position: aiNode.position,
-          data: {
-            label: aiNode.title,
-            description: aiNode.description,
-            duration: aiNode.duration,
+      try {
+        const dataUrl = await exportFunc(reactFlowWrapper.current, {
+          backgroundColor: "#ffffff",
+          width,
+          height,
+          style: {
+            width: `${width}px`,
+            height: `${height}px`,
+            transform: `translate(${-nodesBounds.minX + padding}px, ${-nodesBounds.minY + padding}px)`,
           },
         });
+
+        const link = document.createElement("a");
+        link.download = `flow.${format}`;
+        link.href = dataUrl;
+        link.click();
+      } catch (error) {
+        console.error("Export failed:", error);
       }
+    },
+    [nodes]
+  );
 
-      // Create connections from AI generation
-      for (const conn of result.connections) {
-        const sourceNode = createdNodes[conn.from];
-        const targetNode = createdNodes[conn.to];
-        if (sourceNode && targetNode) {
-          await createConnectionMutation.mutateAsync({
-            playbookId,
-            sourceNodeId: parseInt(sourceNode.id),
-            targetNodeId: parseInt(targetNode.id),
-            label: conn.label,
-          });
-        }
-      }
-
-      // Update canvas with new nodes and edges
-      setNodes(createdNodes);
-      const newEdges = result.connections.map((conn, idx) => ({
-        id: `edge-${idx}`,
-        source: createdNodes[conn.from]?.id,
-        target: createdNodes[conn.to]?.id,
-        label: conn.label,
-        ...defaultEdgeOptions,
-      }));
-      setEdges(newEdges);
-
-      toast.success(`Generated ${createdNodes.length} nodes successfully!`);
-      setIsAIGenerateDialogOpen(false);
-      setAiGenerateDescription("");
-    } catch (error) {
-      console.error("AI Generation Error:", error);
-      toast.error("Failed to generate workflow. Please try again.");
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading playbook...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!playbookData) {
-    return (
-      <div className="p-6">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold mb-2">Playbook not found</h2>
-          <Button onClick={() => setLocation("/playbook-builder")}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Playbooks
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  const shapeLibrary = [
+    { type: "start", label: "Start", color: "#10b981" },
+    { type: "end", label: "End", color: "#ef4444" },
+    { type: "step", label: "Step", color: "#3b82f6" },
+    { type: "decision", label: "Decision", color: "#f59e0b" },
+    { type: "delay", label: "Delay/Wait", color: "#f97316" },
+    { type: "note", label: "Note", color: "#eab308" },
+  ];
 
   return (
-    <div className="h-screen flex flex-col">
-      {/* Header */}
-      <div className="border-b bg-background p-4 flex items-center justify-between z-10">
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setLocation("/playbook-builder")}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">{playbookData.playbook.title}</h1>
-            <p className="text-sm text-muted-foreground">
-              {playbookData.playbook.description}
-            </p>
-          </div>
+    <div style={{ display: "flex", height: "100vh", width: "100%" }}>
+      {/* Shape Library Sidebar */}
+      <div
+        style={{
+          width: "250px",
+          backgroundColor: "#f9fafb",
+          borderRight: "1px solid #e5e7eb",
+          padding: "16px",
+        }}
+      >
+        <h3 style={{ fontSize: "16px", fontWeight: 600, marginBottom: "16px" }}>
+          Shape Library
+        </h3>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {shapeLibrary.map((shape) => (
+            <div
+              key={shape.type}
+              draggable
+              onDragStart={(event) => {
+                event.dataTransfer.setData("application/reactflow", shape.type);
+                event.dataTransfer.effectAllowed = "move";
+              }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                padding: "12px",
+                backgroundColor: "#fff",
+                borderRadius: "8px",
+                border: "1px solid #e5e7eb",
+                cursor: "grab",
+              }}
+            >
+              <div
+                style={{
+                  width: "40px",
+                  height: "40px",
+                  backgroundColor: shape.color,
+                  borderRadius: "6px",
+                }}
+              />
+              <span style={{ fontSize: "14px", fontWeight: 500 }}>{shape.label}</span>
+            </div>
+          ))}
         </div>
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowShapeLibrary(!showShapeLibrary)}
-          >
-            {showShapeLibrary ? "Hide" : "Show"} Shapes
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowAIAssistant(!showAIAssistant)}
-          >
-            <Sparkles className="mr-2 h-4 w-4" />
-            AI Assistant
-          </Button>
-          <Button variant="outline" size="sm">
-            <FileDown className="mr-2 h-4 w-4" />
-            Export
-          </Button>
-          <Button size="sm">
-            <Save className="mr-2 h-4 w-4" />
-            Save
-          </Button>
-        </div>
+        <p style={{ fontSize: "12px", color: "#6b7280", marginTop: "16px" }}>
+          Drag a shape to add it to your flow
+        </p>
       </div>
 
-      {/* Main Canvas Area */}
-      <div className="flex-1 relative flex">
-        {/* Shape Library Panel */}
-        {showShapeLibrary && (
-          <div className="w-64 border-r bg-background p-4 overflow-y-auto">
-            <h3 className="font-semibold mb-3 flex items-center">
-              <Square className="mr-2 h-4 w-4" />
-              Shape Library
-            </h3>
-            <ScrollArea className="h-[calc(100vh-200px)]">
-              <div className="space-y-2">
-                {shapeLibrary.map((shape) => {
-                  const Icon = shape.icon;
-                  return (
-                    <button
-                      key={shape.type}
-                      onClick={() => handleAddNodeFromLibrary(shape.type)}
-                      className="w-full flex items-center space-x-3 p-3 rounded-lg border hover:bg-accent hover:border-primary transition-colors"
-                    >
-                      <div className={`p-2 rounded ${shape.color}`}>
-                        <Icon className="h-5 w-5 text-white" />
-                      </div>
-                      <span className="font-medium">{shape.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-              <Separator className="my-4" />
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  Click a shape to add it to your workflow
-                </p>
-              </div>
-            </ScrollArea>
-          </div>
-        )}
-
-        {/* React Flow Canvas */}
-        <div className="flex-1 relative">
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            onNodeClick={handleNodeClick}
-            onPaneClick={handlePaneClick}
-            onEdgeContextMenu={onEdgeContextMenu}
-            nodeTypes={nodeTypes}
-            defaultEdgeOptions={defaultEdgeOptions}
-            connectionMode={ConnectionMode.Loose}
-            connectionRadius={30}
-            fitView
-          >
-            <Background />
-            <Controls />
-            <MiniMap />
-          </ReactFlow>
-
-          {/* Node Details Panel (when node selected) */}
-          {selectedNode && !showAIAssistant && (
-            <div className="absolute top-4 right-4 w-80">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>Node Details</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleDeleteNode}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </CardTitle>
-                  <CardDescription>
-                    Type: {selectedNode.type}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div>
-                    <Label className="text-xs">Title</Label>
-                    <p className="font-medium">{selectedNode.data.label}</p>
-                  </div>
-                  {selectedNode.data.description && (
-                    <div>
-                      <Label className="text-xs">Description</Label>
-                      <p className="text-sm text-muted-foreground">
-                        {selectedNode.data.description}
-                      </p>
-                    </div>
-                  )}
-                  {selectedNode.data.duration && (
-                    <div>
-                      <Label className="text-xs">Duration</Label>
-                      <p className="text-sm">{selectedNode.data.duration}</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          )}
-        </div>
-
-        {/* AI Assistant Panel */}
-        {showAIAssistant && (
-          <div className="w-80 border-l bg-background p-4 overflow-y-auto">
-            <h3 className="font-semibold mb-3 flex items-center">
-              <Sparkles className="mr-2 h-4 w-4 text-primary" />
-              AI Assistant
-            </h3>
-            <ScrollArea className="h-[calc(100vh-200px)]">
-              <div className="space-y-4">
-                <Button
-                  onClick={handleGenerateAISuggestion}
-                  className="w-full"
-                  variant="outline"
-                >
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  Analyze Workflow
-                </Button>
-                
-                {aiSuggestion && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-sm">Suggestions</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm whitespace-pre-line">{aiSuggestion}</p>
-                    </CardContent>
-                  </Card>
-                )}
-
-                <Separator />
-
-                <div className="space-y-2">
-                  <h4 className="font-medium text-sm">Quick Actions</h4>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full justify-start"
-                    onClick={() => setIsAIGenerateDialogOpen(true)}
-                  >
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    Generate from description
-                  </Button>
-                  <Button variant="outline" size="sm" className="w-full justify-start">
-                    Optimize workflow
-                  </Button>
-                  <Button variant="outline" size="sm" className="w-full justify-start">
-                    Add best practices
-                  </Button>
-                </div>
-              </div>
-            </ScrollArea>
-          </div>
-        )}
-      </div>
-
-      {/* Add Node Dialog */}
-      <Dialog open={isAddNodeDialogOpen} onOpenChange={setIsAddNodeDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add New Node</DialogTitle>
-            <DialogDescription>
-              Create a new step in your playbook workflow
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="node-type">Node Type</Label>
-              <Select
-                value={newNode.type}
-                onValueChange={(value: any) =>
-                  setNewNode({ ...newNode, type: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="start">Start</SelectItem>
-                  <SelectItem value="step">Step</SelectItem>
-                  <SelectItem value="decision">Decision</SelectItem>
-                  <SelectItem value="delay">Delay/Wait</SelectItem>
-                  <SelectItem value="end">End</SelectItem>
-                  <SelectItem value="note">Note</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="node-label">Title</Label>
-              <Input
-                id="node-label"
-                value={newNode.label}
-                onChange={(e) =>
-                  setNewNode({ ...newNode, label: e.target.value })
-                }
-                placeholder="e.g., Send welcome email"
-              />
-            </div>
-            <div>
-              <Label htmlFor="node-description">Description (Optional)</Label>
-              <Textarea
-                id="node-description"
-                value={newNode.description}
-                onChange={(e) =>
-                  setNewNode({ ...newNode, description: e.target.value })
-                }
-                placeholder="Additional details..."
-                rows={3}
-              />
-            </div>
-            {(newNode.type === "step" || newNode.type === "delay") && (
-              <div>
-                <Label htmlFor="node-duration">Duration (Optional)</Label>
-                <Input
-                  id="node-duration"
-                  value={newNode.duration}
-                  onChange={(e) =>
-                    setNewNode({ ...newNode, duration: e.target.value })
-                  }
-                  placeholder="e.g., 2 hours, 3 days"
-                />
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsAddNodeDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleAddNode}
-              disabled={createNodeMutation.isPending}
-            >
-              {createNodeMutation.isPending ? "Adding..." : "Add Node"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* AI Generation Dialog */}
-      <Dialog open={isAIGenerateDialogOpen} onOpenChange={setIsAIGenerateDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center">
-              <Sparkles className="mr-2 h-5 w-5 text-primary" />
-              Generate Workflow with AI
-            </DialogTitle>
-            <DialogDescription>
-              Describe the workflow you want to create and AI will generate a complete playbook with nodes and connections.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="ai-description">Workflow Description</Label>
-              <Textarea
-                id="ai-description"
-                value={aiGenerateDescription}
-                onChange={(e) => setAiGenerateDescription(e.target.value)}
-                placeholder="e.g., Create a customer onboarding workflow for a SaaS company with welcome email, account setup, training session, and follow-up"
-                rows={6}
-                className="resize-none"
-              />
-              <p className="text-xs text-muted-foreground mt-2">
-                💡 Tip: Be specific about the steps, decisions, and timing you want in your workflow.
-              </p>
-            </div>
-            {isGenerating && (
-              <div className="bg-muted p-4 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
-                  <div>
-                    <p className="font-medium">AI is generating your workflow...</p>
-                    <p className="text-sm text-muted-foreground">This may take 10-30 seconds</p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsAIGenerateDialogOpen(false)}
-              disabled={isGenerating}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleGenerateWithAI}
-              disabled={isGenerating || !aiGenerateDescription.trim()}
-            >
-              {isGenerating ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  Generate Workflow
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edge Context Menu */}
-      {edgeContextMenu && edgeContextMenu.edge && (
-        <div
-          className="fixed bg-background border rounded-lg shadow-lg py-1 z-50"
-          style={{
-            left: edgeContextMenu.x,
-            top: edgeContextMenu.y,
-          }}
-          onClick={(e) => e.stopPropagation()}
+      {/* Flow Canvas */}
+      <div ref={reactFlowWrapper} style={{ flex: 1, position: "relative" }}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          onInit={setReactFlowInstance}
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+          nodeTypes={nodeTypes}
+          fitView
         >
-          <button
-            className="w-full px-4 py-2 text-left hover:bg-accent flex items-center space-x-2 text-destructive"
-            onClick={() => handleDeleteEdge(edgeContextMenu.edge!)}
-          >
-            <Trash2 className="h-4 w-4" />
-            <span>Delete Connection</span>
-          </button>
-        </div>
-      )}
+          <Background />
+          <Controls />
+          <Panel position="top-right">
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button
+                onClick={() => exportFlow("png")}
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: "#3b82f6",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <Download size={16} />
+                Export PNG
+              </button>
+              <button
+                onClick={() => exportFlow("jpeg")}
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: "#3b82f6",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <Download size={16} />
+                Export JPEG
+              </button>
+              <button
+                onClick={() => exportFlow("svg")}
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: "#3b82f6",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <Download size={16} />
+                Export SVG
+              </button>
+            </div>
+          </Panel>
+        </ReactFlow>
+      </div>
     </div>
+  );
+}
+
+export default function PlaybookCanvas() {
+  return (
+    <ReactFlowProvider>
+      <FlowCanvas />
+    </ReactFlowProvider>
   );
 }
 

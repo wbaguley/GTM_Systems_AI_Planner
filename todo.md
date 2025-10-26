@@ -316,9 +316,82 @@
 
 
 
-## Known Issues - Flow Builder
-- [ ] Fix floating toolbar not appearing when node is selected (ReactFlow selection mechanism needs configuration)
-- [ ] Ensure toolbar shows shape picker, color picker, clone, and delete buttons
-- [ ] Test all toolbar interactions (shape change, color change, clone, delete)
+## Flow Builder - ClickUp Features (Based on Screenshots)
+
+### Right-Click Context Menu
+- [ ] Implement comprehensive right-click context menu with all options:
+  - [ ] Lock
+  - [ ] Link to...
+  - [ ] Send to front
+  - [ ] Send to back
+  - [ ] Send forward (Alt + ])
+  - [ ] Send backward (Alt + [)
+  - [ ] Copy (Ctrl + C)
+  - [ ] Paste (Ctrl + V)
+  - [ ] Duplicate (Ctrl + D)
+  - [ ] Cut (Ctrl + X)
+  - [ ] Delete
+  - [ ] Copy object (Ctrl + Shift + L)
+  - [ ] Copy as... (submenu)
+  - [ ] Export as... (submenu)
+  - [ ] Select all (Ctrl + A)
+
+### Floating Toolbar Fixes
+- [x] Fix floating toolbar to appear when node is clicked/selected
+- [x] Add shape picker dropdown with icons for all shapes
+- [x] Fix color picker to work properly with gradient/hue selector
+- [x] Add copy/duplicate button to toolbar
+- [x] Add delete button to toolbar
+- [x] Ensure toolbar has dark theme (#1f2937 background)
+
+### Shape Library Expansion
+- [x] Add more shape variations:
+  - [x] Parallelogram (slanted rectangle)
+  - [x] Trapezoid
+  - [ ] Pentagon
+  - [x] Hexagon (proper 6-sided)
+  - [ ] Octagon
+  - [x] Oval/Ellipse
+  - [ ] Star
+  - [ ] Arrow (right-pointing)
+  - [ ] Arrow (left-pointing)
+  - [ ] Arrow (up-pointing)
+  - [ ] Arrow (down-pointing)
+  - [ ] Rounded rectangle (different radius)
+  - [ ] Pill shape
+
+### Dark Theme Canvas
+- [x] Change canvas background to dark (#1a1a1a or similar)
+- [x] Update grid dots to light color for dark theme
+- [x] Ensure all text is visible on dark background
+
+### Bottom Toolbar
+- [ ] Add bottom toolbar with ClickUp-style tools:
+  - [ ] Selection tool
+  - [ ] Hand/Pan tool
+  - [ ] Text tool
+  - [ ] Sticky note tool
+  - [ ] Shape tools
+  - [ ] Image upload tool
+  - [ ] Other ClickUp whiteboard tools
+
+### QA Testing Checklist
+- [x] Test node selection (click to select) - PASSED
+- [x] Test floating toolbar appears on selection - PASSED
+- [x] Test shape picker dropdown works - PASSED (7 shapes available)
+- [x] Test color picker changes node color - PASSED (HexColorPicker working)
+- [ ] Test color persists after page reload
+- [ ] Test shape change persists after page reload
+- [ ] Test right-click context menu appears - NEEDS MANUAL TESTING
+- [ ] Test all context menu options work
+- [x] Test node resizing with drag handles - PASSED (NodeResizer visible)
+- [ ] Test node position persists
+- [ ] Test drag-and-drop from shape library - NEEDS MANUAL TESTING
+- [ ] Test double-click inline editing
+- [ ] Test export PNG/JPEG/SVG - NEEDS MANUAL TESTING
+- [x] Test zoom controls - PASSED (visible in UI)
+- [x] Test fit view - PASSED (visible in UI)
+- [x] Test dark theme visibility - PASSED (dark canvas and sidebar)
+- [ ] Test on different screen sizes
 
 

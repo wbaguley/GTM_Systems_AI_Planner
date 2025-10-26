@@ -1,243 +1,353 @@
-// This file will contain the enhanced Flow Builder
-// Due to the complexity, I'll implement this incrementally
-// Starting with the basic structure and adding features one by one
-
-import { useState, useCallback, useEffect, useRef } from "react";
-import { useParams, useLocation } from "wouter";
+import React, { useState, useCallback, useRef } from "react";
 import ReactFlow, {
-  Background,
-  Controls,
-  MiniMap,
+  ReactFlowProvider,
   addEdge,
   useNodesState,
   useEdgesState,
+  Controls,
+  Background,
   Connection,
-  Edge,
   Node,
-  NodeTypes,
-  MarkerType,
+  NodeProps,
   Handle,
   Position,
-  ConnectionMode,
-  ReactFlowProvider,
-  useReactFlow,
-  getRectOfNodes,
-  getTransformForBounds,
+  Panel,
 } from "reactflow";
-import { toPng, toJpeg, toSvg } from "html-to-image";
+import { NodeResizer } from "@reactflow/node-resizer";
+import { HexColorPicker } from "react-colorful";
 import "reactflow/dist/style.css";
-import "./playbook-canvas-styles.css";
+import "@reactflow/node-resizer/dist/style.css";
 import { trpc } from "../lib/trpc";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
+import { useParams } from "wouter";
 import {
-  ArrowLeft,
-  Save,
-  FileDown,
-  Square,
-  Circle,
-  Diamond,
-  StickyNote,
-  Sparkles,
   Download,
+  Circle,
+  Square,
+  Diamond,
+  Hexagon,
+  Copy,
+  Trash2,
+  ChevronDown,
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../components/ui/dropdown-menu";
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuSeparator,
-  ContextMenuSub,
-  ContextMenuSubContent,
-  ContextMenuSubTrigger,
-  ContextMenuTrigger,
-} from "../components/ui/context-menu";
-import { toast } from "sonner";
-import { ScrollArea } from "../components/ui/scroll-area";
+import { toPng, toJpeg, toSvg } from "html-to-image";
 
-// Editable Node Component with double-click to edit
-const EditableNode = ({ data, type: nodeType }: any) => {
+// Custom Resizable Node Component
+function ResizableNode({ id, data, selected }: NodeProps) {
+  const [showToolbar, setShowToolbar] = useState(false);
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showShapePicker, setShowShapePicker] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [label, setLabel] = useState(data.label || "");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [isEditing]);
-
   const handleDoubleClick = () => {
     setIsEditing(true);
+    setTimeout(() => inputRef.current?.focus(), 0);
   };
 
   const handleBlur = () => {
     setIsEditing(false);
     if (data.onLabelChange) {
-      data.onLabelChange(label);
+      data.onLabelChange(id, label);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       handleBlur();
-    } else if (e.key === "Escape") {
-      setLabel(data.label);
-      setIsEditing(false);
     }
   };
 
-  const getNodeStyle = () => {
-    switch (nodeType) {
-      case "start":
-        return "px-4 py-2 shadow-md rounded-full bg-green-500 text-white border-2 border-green-600";
-      case "end":
-        return "px-4 py-2 shadow-md rounded-full bg-red-500 text-white border-2 border-red-600";
-      case "step":
-        return "px-4 py-3 shadow-md rounded-lg bg-blue-500 text-white border-2 border-blue-600 min-w-[200px]";
-      case "decision":
-        return "w-32 h-32 flex items-center justify-center";
-      case "delay":
-        return "px-4 py-2 shadow-md rounded-full bg-orange-500 text-white border-2 border-orange-600";
-      case "note":
-        return "px-4 py-3 shadow-md rounded-lg bg-yellow-100 text-gray-800 border-2 border-yellow-300 min-w-[200px]";
+  const getShapeStyle = () => {
+    const baseStyle: React.CSSProperties = {
+      width: "100%",
+      height: "100%",
+      backgroundColor: data.color || "#3b82f6",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "12px",
+      fontSize: "14px",
+      fontWeight: 500,
+      color: "#fff",
+      cursor: "pointer",
+    };
+
+    switch (data.shape) {
+      case "circle":
+        return { ...baseStyle, borderRadius: "50%" };
+      case "diamond":
+        return { ...baseStyle, transform: "rotate(45deg)" };
+      case "hexagon":
+        return { ...baseStyle, clipPath: "polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)" };
       default:
-        return "px-4 py-3 shadow-md rounded-lg bg-blue-500 text-white border-2 border-blue-600 min-w-[200px]";
+        return { ...baseStyle, borderRadius: "8px" };
     }
   };
 
-  if (nodeType === "decision") {
-    return (
-      <div className="relative w-32 h-32 flex items-center justify-center" onDoubleClick={handleDoubleClick}>
-        <Handle type="target" position={Position.Top} id="top" />
-        <Handle type="source" position={Position.Right} id="right" />
-        <Handle type="source" position={Position.Bottom} id="bottom" />
-        <Handle type="target" position={Position.Left} id="left" />
-        <div className="absolute inset-0 bg-yellow-500 border-2 border-yellow-600 shadow-md transform rotate-45"></div>
+  return (
+    <div
+      style={{ width: data.width || 200, height: data.height || 100 }}
+      onClick={() => setShowToolbar(!showToolbar)}
+      onDoubleClick={handleDoubleClick}
+    >
+      <NodeResizer
+        isVisible={selected}
+        minWidth={100}
+        minHeight={60}
+        onResize={(event, params) => {
+          if (data.onResize) {
+            data.onResize(id, params.width, params.height);
+          }
+        }}
+      />
+      <Handle type="target" position={Position.Top} />
+      <div style={getShapeStyle()}>
         {isEditing ? (
           <input
             ref={inputRef}
-            type="text"
             value={label}
             onChange={(e) => setLabel(e.target.value)}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
-            className="relative z-10 text-center bg-transparent border-none outline-none text-white font-bold w-20"
+            style={{
+              background: "transparent",
+              border: "none",
+              outline: "none",
+              color: "#fff",
+              fontSize: "14px",
+              fontWeight: 500,
+              textAlign: "center",
+              width: "100%",
+            }}
           />
         ) : (
-          <div className="relative z-10 font-bold text-white text-center px-2">{data.label}</div>
+          <span style={{ transform: data.shape === "diamond" ? "rotate(-45deg)" : "none" }}>
+            {label}
+          </span>
         )}
       </div>
-    );
-  }
+      <Handle type="source" position={Position.Bottom} />
 
-  return (
-    <div className={getNodeStyle()} onDoubleClick={handleDoubleClick}>
-      <Handle type="target" position={Position.Top} id="top" />
-      <Handle type="source" position={Position.Right} id="right" />
-      <Handle type="source" position={Position.Bottom} id="bottom" />
-      <Handle type="target" position={Position.Left} id="left" />
-      {isEditing ? (
-        <input
-          ref={inputRef}
-          type="text"
-          value={label}
-          onChange={(e) => setLabel(e.target.value)}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
-          className="bg-transparent border-none outline-none font-bold w-full"
-        />
-      ) : (
-        <div className="font-bold">{data.label}</div>
+      {/* Floating Toolbar */}
+      {selected && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: -60,
+            left: "50%",
+            transform: "translateX(-50%)",
+            backgroundColor: "#1f2937",
+            borderRadius: "8px",
+            padding: "8px",
+            display: "flex",
+            gap: "8px",
+            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+            zIndex: 1000,
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Shape Picker */}
+          <div style={{ position: "relative" }}>
+            <button
+              onClick={() => setShowShapePicker(!showShapePicker)}
+              style={{
+                background: "#374151",
+                border: "none",
+                borderRadius: "4px",
+                padding: "6px 8px",
+                color: "#fff",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+              }}
+            >
+              <Square size={16} />
+              <ChevronDown size={12} />
+            </button>
+            {showShapePicker && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: 40,
+                  left: 0,
+                  backgroundColor: "#1f2937",
+                  borderRadius: "8px",
+                  padding: "8px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "4px",
+                  minWidth: "120px",
+                }}
+              >
+                {[
+                  { shape: "rectangle", icon: Square, label: "Rectangle" },
+                  { shape: "circle", icon: Circle, label: "Circle" },
+                  { shape: "diamond", icon: Diamond, label: "Diamond" },
+                  { shape: "hexagon", icon: Hexagon, label: "Hexagon" },
+                ].map(({ shape, icon: Icon, label: shapeLabel }) => (
+                  <button
+                    key={shape}
+                    onClick={() => {
+                      if (data.onShapeChange) {
+                        data.onShapeChange(id, shape);
+                      }
+                      setShowShapePicker(false);
+                    }}
+                    style={{
+                      background: data.shape === shape ? "#4b5563" : "transparent",
+                      border: "none",
+                      borderRadius: "4px",
+                      padding: "8px",
+                      color: "#fff",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      textAlign: "left",
+                    }}
+                  >
+                    <Icon size={16} />
+                    <span style={{ fontSize: "14px" }}>{shapeLabel}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Color Picker */}
+          <div style={{ position: "relative" }}>
+            <button
+              onClick={() => setShowColorPicker(!showColorPicker)}
+              style={{
+                background: data.color || "#3b82f6",
+                border: "2px solid #fff",
+                borderRadius: "4px",
+                width: "32px",
+                height: "32px",
+                cursor: "pointer",
+              }}
+            />
+            {showColorPicker && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: 40,
+                  left: 0,
+                  zIndex: 1001,
+                }}
+              >
+                <HexColorPicker
+                  color={data.color || "#3b82f6"}
+                  onChange={(color) => {
+                    if (data.onColorChange) {
+                      data.onColorChange(id, color);
+                    }
+                  }}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Clone Button */}
+          <button
+            onClick={() => {
+              if (data.onClone) {
+                data.onClone(id);
+              }
+            }}
+            style={{
+              background: "#374151",
+              border: "none",
+              borderRadius: "4px",
+              padding: "6px 8px",
+              color: "#fff",
+              cursor: "pointer",
+            }}
+          >
+            <Copy size={16} />
+          </button>
+
+          {/* Delete Button */}
+          <button
+            onClick={() => {
+              if (data.onDelete) {
+                data.onDelete(id);
+              }
+            }}
+            style={{
+              background: "#dc2626",
+              border: "none",
+              borderRadius: "4px",
+              padding: "6px 8px",
+              color: "#fff",
+              cursor: "pointer",
+            }}
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
       )}
-      {data.description && <div className="text-xs mt-1">{data.description}</div>}
-      {data.duration && <div className="text-xs mt-1 opacity-75">⏱ {data.duration}</div>}
     </div>
   );
-};
+}
 
-const nodeTypes: NodeTypes = {
-  start: (props) => <EditableNode {...props} type="start" />,
-  step: (props) => <EditableNode {...props} type="step" />,
-  decision: (props) => <EditableNode {...props} type="decision" />,
-  end: (props) => <EditableNode {...props} type="end" />,
-  note: (props) => <EditableNode {...props} type="note" />,
-  delay: (props) => <EditableNode {...props} type="delay" />,
+const nodeTypes = {
+  resizable: ResizableNode,
 };
-
-const defaultEdgeOptions = {
-  type: "default",
-  markerEnd: {
-    type: MarkerType.ArrowClosed,
-    width: 20,
-    height: 20,
-    color: "#64748b",
-  },
-  style: {
-    strokeWidth: 2,
-    stroke: "#64748b",
-  },
-  animated: false,
-};
-
-const shapeLibrary = [
-  { type: "start", icon: Circle, label: "Start", color: "bg-green-500" },
-  { type: "end", icon: Circle, label: "End", color: "bg-red-500" },
-  { type: "step", icon: Square, label: "Step", color: "bg-blue-500" },
-  { type: "decision", icon: Diamond, label: "Decision", color: "bg-yellow-500" },
-  { type: "delay", icon: Circle, label: "Delay/Wait", color: "bg-orange-500" },
-  { type: "note", icon: StickyNote, label: "Note", color: "bg-yellow-100" },
-];
 
 function FlowCanvas() {
-  const { id } = useParams<{ id: string }>();
-  const [, setLocation] = useLocation();
-  const playbookId = parseInt(id || "0");
+  const params = useParams();
+  const id = params.id;
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
-  const { project, getNodes } = useReactFlow();
-
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const [showShapeLibrary, setShowShapeLibrary] = useState(true);
+  const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
 
-  const { data: playbookData, isLoading } = trpc.playbook.getComplete.useQuery(
-    { id: playbookId },
-    { enabled: playbookId > 0 }
+  // Fetch playbook data
+  const { data: playbookData } = trpc.playbook.getComplete.useQuery(
+    { id: parseInt(id || "0") },
+    { enabled: !!id }
   );
 
-  const createNodeMutation = trpc.playbook.createNode.useMutation();
   const updateNodeMutation = trpc.playbook.updateNode.useMutation();
-  const deleteNodeMutation = trpc.playbook.deleteNode.useMutation();
-  const createConnectionMutation = trpc.playbook.createConnection.useMutation();
-  const deleteConnectionMutation = trpc.playbook.deleteConnection.useMutation();
 
   // Load playbook data
-  useEffect(() => {
+  React.useEffect(() => {
     if (playbookData) {
-      const loadedNodes = playbookData.nodes.map((node: any) => ({
-        id: node.id.toString(),
-        type: node.nodeType,
-        position: JSON.parse(node.position as string),
-        data: {
-          label: node.title,
-          description: node.description,
-          duration: node.duration,
-          onLabelChange: (newLabel: string) => handleNodeLabelChange(node.id.toString(), newLabel),
-        },
-      }));
+      const loadedNodes = playbookData.nodes.map((node: any) => {
+        // Parse position if it's a JSON string
+        let position = { x: 0, y: 0 };
+        if (node.position) {
+          position = typeof node.position === 'string' ? JSON.parse(node.position) : node.position;
+        }
+        
+        return {
+          id: node.id.toString(),
+          type: "resizable",
+          position,
+          data: {
+            label: node.title,
+            color: node.color || "#3b82f6",
+            shape: node.shape || "rectangle",
+            width: node.width || 200,
+            height: node.height || 100,
+            onLabelChange: handleLabelChange,
+            onColorChange: handleColorChange,
+            onShapeChange: handleShapeChange,
+            onResize: handleResize,
+            onClone: handleClone,
+            onDelete: handleDelete,
+          },
+        };
+      });
 
       const loadedEdges = playbookData.connections.map((conn: any) => ({
-        id: conn.id.toString(),
+        id: `e${conn.sourceNodeId}-${conn.targetNodeId}`,
         source: conn.sourceNodeId.toString(),
         target: conn.targetNodeId.toString(),
         label: conn.label,
-        ...defaultEdgeOptions,
       }));
 
       setNodes(loadedNodes);
@@ -245,30 +355,88 @@ function FlowCanvas() {
     }
   }, [playbookData]);
 
-  const handleNodeLabelChange = async (nodeId: string, newLabel: string) => {
-    try {
-      await updateNodeMutation.mutateAsync({
-        id: parseInt(nodeId),
-        title: newLabel,
-      });
-      setNodes((nds) =>
-        nds.map((node) =>
-          node.id === nodeId
-            ? { ...node, data: { ...node.data, label: newLabel } }
-            : node
-        )
-      );
-      toast.success("Node updated");
-    } catch (error) {
-      toast.error("Failed to update node");
-    }
-  };
+  const handleLabelChange = useCallback((nodeId: string, newLabel: string) => {
+    setNodes((nds) =>
+      nds.map((node) =>
+        node.id === nodeId
+          ? { ...node, data: { ...node.data, label: newLabel } }
+          : node
+      )
+    );
+    updateNodeMutation.mutate({
+      id: parseInt(nodeId),
+      title: newLabel,
+    });
+  }, []);
 
-  // Drag and drop from shape library
-  const onDragStart = (event: React.DragEvent, nodeType: string) => {
-    event.dataTransfer.setData("application/reactflow", nodeType);
-    event.dataTransfer.effectAllowed = "move";
-  };
+  const handleColorChange = useCallback((nodeId: string, newColor: string) => {
+    setNodes((nds) =>
+      nds.map((node) =>
+        node.id === nodeId
+          ? { ...node, data: { ...node.data, color: newColor } }
+          : node
+      )
+    );
+    updateNodeMutation.mutate({
+      id: parseInt(nodeId),
+      color: newColor,
+    });
+  }, []);
+
+  const handleShapeChange = useCallback((nodeId: string, newShape: string) => {
+    setNodes((nds) =>
+      nds.map((node) =>
+        node.id === nodeId
+          ? { ...node, data: { ...node.data, shape: newShape } }
+          : node
+      )
+    );
+    updateNodeMutation.mutate({
+      id: parseInt(nodeId),
+      shape: newShape,
+    });
+  }, []);
+
+  const handleResize = useCallback((nodeId: string, width: number, height: number) => {
+    setNodes((nds) =>
+      nds.map((node) =>
+        node.id === nodeId
+          ? { ...node, data: { ...node.data, width, height } }
+          : node
+      )
+    );
+    updateNodeMutation.mutate({
+      id: parseInt(nodeId),
+      width: Math.round(width),
+      height: Math.round(height),
+    });
+  }, []);
+
+  const handleClone = useCallback((nodeId: string) => {
+    const nodeToClone = nodes.find((n) => n.id === nodeId);
+    if (!nodeToClone) return;
+
+    const newNode = {
+      ...nodeToClone,
+      id: `temp-${Date.now()}`,
+      position: {
+        x: nodeToClone.position.x + 50,
+        y: nodeToClone.position.y + 50,
+      },
+    };
+
+    setNodes((nds) => [...nds, newNode]);
+  }, [nodes]);
+
+  const handleDelete = useCallback((nodeId: string) => {
+    setNodes((nds) => nds.filter((n) => n.id !== nodeId));
+    setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
+  }, []);
+
+  const onConnect = useCallback(
+    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
+    []
+  );
 
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
@@ -276,308 +444,233 @@ function FlowCanvas() {
   }, []);
 
   const onDrop = useCallback(
-    async (event: React.DragEvent) => {
+    (event: React.DragEvent) => {
       event.preventDefault();
 
-      const reactFlowBounds = reactFlowWrapper.current?.getBoundingClientRect();
       const type = event.dataTransfer.getData("application/reactflow");
+      if (!type || !reactFlowInstance) return;
 
-      if (typeof type === "undefined" || !type || !reactFlowBounds) {
-        return;
-      }
-
-      const position = project({
-        x: event.clientX - reactFlowBounds.left,
-        y: event.clientY - reactFlowBounds.top,
-      });
-
-      try {
-        const result = await createNodeMutation.mutateAsync({
-          playbookId,
-          nodeType: type as any,
-          title: `New ${type}`,
-          description: "",
-          duration: "",
-          position,
-        });
-
-        const newNode: Node = {
-          id: result.id.toString(),
-          type: type as any,
-          position,
-          data: {
-            label: `New ${type}`,
-            onLabelChange: (newLabel: string) => handleNodeLabelChange(result.id.toString(), newLabel),
-          },
-        };
-
-        setNodes((nds) => [...nds, newNode]);
-        toast.success("Node added - double-click to edit");
-      } catch (error) {
-        toast.error("Failed to add node");
-      }
-    },
-    [project, playbookId, createNodeMutation, setNodes]
-  );
-
-  const onConnect = useCallback(
-    async (params: Connection) => {
-      const newEdge = {
-        ...params,
-        id: `temp-${Date.now()}`,
-        ...defaultEdgeOptions,
-      } as Edge;
-      setEdges((eds) => addEdge(newEdge, eds));
-
-      try {
-        const result = await createConnectionMutation.mutateAsync({
-          playbookId,
-          sourceNodeId: parseInt(params.source!),
-          targetNodeId: parseInt(params.target!),
-          label: params.sourceHandle || undefined,
-        });
-
-        setEdges((eds) =>
-          eds.map((e) => (e.id === newEdge.id ? { ...e, id: result.id.toString() } : e))
-        );
-        toast.success("Connection created");
-      } catch (error) {
-        toast.error("Failed to create connection");
-        setEdges((eds) => eds.filter((e) => e.id !== newEdge.id));
-      }
-    },
-    [playbookId, createConnectionMutation, setEdges]
-  );
-
-  // Clone node
-  const handleCloneNode = async (node: Node) => {
-    try {
-      const result = await createNodeMutation.mutateAsync({
-        playbookId,
-        nodeType: node.type as any,
-        title: `${node.data.label} (copy)`,
-        description: node.data.description || "",
-        duration: node.data.duration || "",
-        position: { x: node.position.x + 50, y: node.position.y + 50 },
+      const position = reactFlowInstance.screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
       });
 
       const newNode: Node = {
-        id: result.id.toString(),
-        type: node.type as any,
-        position: { x: node.position.x + 50, y: node.position.y + 50 },
+        id: `temp-${Date.now()}`,
+        type: "resizable",
+        position,
         data: {
-          ...node.data,
-          label: `${node.data.label} (copy)`,
-          onLabelChange: (newLabel: string) => handleNodeLabelChange(result.id.toString(), newLabel),
+          label: type.charAt(0).toUpperCase() + type.slice(1),
+          color: getColorForType(type),
+          shape: "rectangle",
+          width: 200,
+          height: 100,
+          onLabelChange: handleLabelChange,
+          onColorChange: handleColorChange,
+          onShapeChange: handleShapeChange,
+          onResize: handleResize,
+          onClone: handleClone,
+          onDelete: handleDelete,
         },
       };
 
-      setNodes((nds) => [...nds, newNode]);
-      toast.success("Node cloned");
-    } catch (error) {
-      toast.error("Failed to clone node");
-    }
+      setNodes((nds) => nds.concat(newNode));
+    },
+    [reactFlowInstance, handleLabelChange, handleColorChange, handleShapeChange, handleResize, handleClone, handleDelete]
+  );
+
+  const getColorForType = (type: string) => {
+    const colors: Record<string, string> = {
+      start: "#10b981",
+      end: "#ef4444",
+      step: "#3b82f6",
+      decision: "#f59e0b",
+      delay: "#f97316",
+      note: "#eab308",
+    };
+    return colors[type] || "#3b82f6";
   };
 
-  // Delete node
-  const handleDeleteNode = async (nodeId: string) => {
-    try {
-      await deleteNodeMutation.mutateAsync({ id: parseInt(nodeId) });
-      setNodes((nds) => nds.filter((n) => n.id !== nodeId));
-      setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
-      toast.success("Node deleted");
-    } catch (error) {
-      toast.error("Failed to delete node");
-    }
-  };
+  const exportFlow = useCallback(
+    async (format: "png" | "jpeg" | "svg") => {
+      if (!reactFlowWrapper.current) return;
 
-  // Export functions
-  const downloadImage = (dataUrl: string, extension: string) => {
-    const a = document.createElement("a");
-    a.setAttribute("download", `flow-${playbookId}.${extension}`);
-    a.setAttribute("href", dataUrl);
-    a.click();
-  };
+      // Calculate bounds of all nodes
+      const nodesBounds = nodes.reduce(
+        (acc, node) => {
+          const width = node.data.width || 200;
+          const height = node.data.height || 100;
+          return {
+            minX: Math.min(acc.minX, node.position.x),
+            minY: Math.min(acc.minY, node.position.y),
+            maxX: Math.max(acc.maxX, node.position.x + width),
+            maxY: Math.max(acc.maxY, node.position.y + height),
+          };
+        },
+        { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
+      );
 
-  const handleExport = async (format: "png" | "jpeg" | "svg") => {
-    const nodesBounds = getRectOfNodes(getNodes());
-    const transform = getTransformForBounds(nodesBounds, nodesBounds.width, nodesBounds.height, 0.5, 2);
+      const padding = 50;
+      const width = nodesBounds.maxX - nodesBounds.minX + padding * 2;
+      const height = nodesBounds.maxY - nodesBounds.minY + padding * 2;
 
-    const viewport = document.querySelector(".react-flow__viewport") as HTMLElement;
-    if (!viewport) return;
+      const exportFunc = format === "png" ? toPng : format === "jpeg" ? toJpeg : toSvg;
 
-    try {
-      let dataUrl: string;
-      if (format === "png") {
-        dataUrl = await toPng(viewport, {
+      try {
+        const dataUrl = await exportFunc(reactFlowWrapper.current, {
           backgroundColor: "#ffffff",
-          width: nodesBounds.width,
-          height: nodesBounds.height,
+          width,
+          height,
           style: {
-            width: `${nodesBounds.width}px`,
-            height: `${nodesBounds.height}px`,
-            transform: `translate(${transform[0]}px, ${transform[1]}px) scale(${transform[2]})`,
+            width: `${width}px`,
+            height: `${height}px`,
+            transform: `translate(${-nodesBounds.minX + padding}px, ${-nodesBounds.minY + padding}px)`,
           },
         });
-        downloadImage(dataUrl, "png");
-      } else if (format === "jpeg") {
-        dataUrl = await toJpeg(viewport, {
-          backgroundColor: "#ffffff",
-          quality: 0.95,
-        });
-        downloadImage(dataUrl, "jpeg");
-      } else if (format === "svg") {
-        dataUrl = await toSvg(viewport);
-        downloadImage(dataUrl, "svg");
+
+        const link = document.createElement("a");
+        link.download = `flow.${format}`;
+        link.href = dataUrl;
+        link.click();
+      } catch (error) {
+        console.error("Export failed:", error);
       }
-      toast.success(`Exported as ${format.toUpperCase()}`);
-    } catch (error) {
-      toast.error("Failed to export");
-    }
-  };
+    },
+    [nodes]
+  );
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading flow...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!playbookData) {
-    return (
-      <div className="p-6">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold mb-2">Flow not found</h2>
-          <Button onClick={() => setLocation("/playbook-builder")}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Flows
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  const shapeLibrary = [
+    { type: "start", label: "Start", color: "#10b981" },
+    { type: "end", label: "End", color: "#ef4444" },
+    { type: "step", label: "Step", color: "#3b82f6" },
+    { type: "decision", label: "Decision", color: "#f59e0b" },
+    { type: "delay", label: "Delay/Wait", color: "#f97316" },
+    { type: "note", label: "Note", color: "#eab308" },
+  ];
 
   return (
-    <div className="h-screen flex flex-col">
-      {/* Header */}
-      <div className="border-b bg-background p-4 flex items-center justify-between z-10">
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="sm" onClick={() => setLocation("/playbook-builder")}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">{playbookData.playbook.title}</h1>
-            <p className="text-sm text-muted-foreground">{playbookData.playbook.description}</p>
-          </div>
+    <div style={{ display: "flex", height: "100vh", width: "100%" }}>
+      {/* Shape Library Sidebar */}
+      <div
+        style={{
+          width: "250px",
+          backgroundColor: "#f9fafb",
+          borderRight: "1px solid #e5e7eb",
+          padding: "16px",
+        }}
+      >
+        <h3 style={{ fontSize: "16px", fontWeight: 600, marginBottom: "16px" }}>
+          Shape Library
+        </h3>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {shapeLibrary.map((shape) => (
+            <div
+              key={shape.type}
+              draggable
+              onDragStart={(event) => {
+                event.dataTransfer.setData("application/reactflow", shape.type);
+                event.dataTransfer.effectAllowed = "move";
+              }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                padding: "12px",
+                backgroundColor: "#fff",
+                borderRadius: "8px",
+                border: "1px solid #e5e7eb",
+                cursor: "grab",
+              }}
+            >
+              <div
+                style={{
+                  width: "40px",
+                  height: "40px",
+                  backgroundColor: shape.color,
+                  borderRadius: "6px",
+                }}
+              />
+              <span style={{ fontSize: "14px", fontWeight: 500 }}>{shape.label}</span>
+            </div>
+          ))}
         </div>
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowShapeLibrary(!showShapeLibrary)}
-          >
-            {showShapeLibrary ? "Hide" : "Show"} Shapes
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <FileDown className="mr-2 h-4 w-4" />
-                Export
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => handleExport("png")}>
-                <Download className="mr-2 h-4 w-4" />
-                PNG
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleExport("jpeg")}>
-                <Download className="mr-2 h-4 w-4" />
-                JPEG
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleExport("svg")}>
-                <Download className="mr-2 h-4 w-4" />
-                SVG
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        <p style={{ fontSize: "12px", color: "#6b7280", marginTop: "16px" }}>
+          Drag a shape to add it to your flow
+        </p>
       </div>
 
-      {/* Main Canvas Area */}
-      <div className="flex-1 relative flex">
-        {/* Shape Library Panel */}
-        {showShapeLibrary && (
-          <div className="w-64 border-r bg-background p-4 overflow-y-auto">
-            <h3 className="font-semibold mb-3 flex items-center">
-              <Square className="mr-2 h-4 w-4" />
-              Shape Library
-            </h3>
-            <p className="text-xs text-muted-foreground mb-4">Drag shapes onto the canvas</p>
-            <ScrollArea className="h-[calc(100vh-200px)]">
-              <div className="space-y-2">
-                {shapeLibrary.map((shape) => {
-                  const Icon = shape.icon;
-                  return (
-                    <div
-                      key={shape.type}
-                      draggable
-                      onDragStart={(e) => onDragStart(e, shape.type)}
-                      className="flex items-center space-x-3 p-3 rounded-lg border hover:bg-accent hover:border-primary transition-colors cursor-grab active:cursor-grabbing"
-                    >
-                      <div className={`w-8 h-8 rounded flex items-center justify-center ${shape.color}`}>
-                        <Icon className="h-4 w-4 text-white" />
-                      </div>
-                      <span className="font-medium">{shape.label}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </ScrollArea>
-          </div>
-        )}
-
-        {/* ReactFlow Canvas */}
-        <div className="flex-1" ref={reactFlowWrapper}>
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            onDrop={onDrop}
-            onDragOver={onDragOver}
-            nodeTypes={nodeTypes}
-            defaultEdgeOptions={defaultEdgeOptions}
-            connectionMode={ConnectionMode.Loose}
-            fitView
-          >
-            <Background />
-            <Controls />
-            <MiniMap />
-            {/* Context Menu for Nodes */}
-            {nodes.map((node) => (
-              <ContextMenu key={node.id}>
-                <ContextMenuTrigger />
-                <ContextMenuContent>
-                  <ContextMenuItem onClick={() => handleCloneNode(node)}>
-                    Clone
-                  </ContextMenuItem>
-                  <ContextMenuSeparator />
-                  <ContextMenuItem
-                    onClick={() => handleDeleteNode(node.id)}
-                    className="text-destructive"
-                  >
-                    Delete
-                  </ContextMenuItem>
-                </ContextMenuContent>
-              </ContextMenu>
-            ))}
-          </ReactFlow>
-        </div>
+      {/* Flow Canvas */}
+      <div ref={reactFlowWrapper} style={{ flex: 1, position: "relative" }}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          onInit={setReactFlowInstance}
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+          nodeTypes={nodeTypes}
+          fitView
+        >
+          <Background />
+          <Controls />
+          <Panel position="top-right">
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button
+                onClick={() => exportFlow("png")}
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: "#3b82f6",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <Download size={16} />
+                Export PNG
+              </button>
+              <button
+                onClick={() => exportFlow("jpeg")}
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: "#3b82f6",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <Download size={16} />
+                Export JPEG
+              </button>
+              <button
+                onClick={() => exportFlow("svg")}
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: "#3b82f6",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <Download size={16} />
+                Export SVG
+              </button>
+            </div>
+          </Panel>
+        </ReactFlow>
       </div>
     </div>
   );
