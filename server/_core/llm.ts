@@ -265,8 +265,42 @@ const normalizeResponseFormat = ({
   };
 };
 
-export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
-  assertApiKey();
+export async function invokeLLM(params: InvokeParams, userId?: number): Promise<InvokeResult> {
+  // Check if user has custom LLM configured
+  let useCustom = false;
+  let customProvider: string | null = null;
+  let customModel: string | null = null;
+  let customApiKey: string | null = null;
+  let customServerUrl: string | null = null;
+  
+  if (userId) {
+    try {
+      const { getLLMSettings } = await import("../db-llm-settings");
+      const { getApiKey } = await import("../db-apikeys");
+      
+      const llmSettings = await getLLMSettings(userId);
+      
+      if (llmSettings && llmSettings.useCustomLLM && llmSettings.provider && llmSettings.model) {
+        useCustom = true;
+        customProvider = llmSettings.provider;
+        customModel = llmSettings.model;
+        
+        // Get API key for the provider
+        const apiKeyData = await getApiKey(userId, llmSettings.provider);
+        if (apiKeyData) {
+          customApiKey = apiKeyData.apiKey || null;
+          customServerUrl = apiKeyData.serverUrl || null;
+        }
+      }
+    } catch (error) {
+      console.error("Error loading LLM settings, falling back to Forge:", error);
+    }
+  }
+  
+  // If not using custom LLM, use Forge
+  if (!useCustom) {
+    assertApiKey();
+  }
 
   const {
     messages,
@@ -280,7 +314,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   } = params;
 
   const payload: Record<string, unknown> = {
-    model: "gemini-2.5-flash",
+    model: useCustom && customModel ? customModel : "gemini-2.5-flash",
     messages: messages.map(normalizeMessage),
   };
 
@@ -296,9 +330,14 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.tool_choice = normalizedToolChoice;
   }
 
-  payload.max_tokens = 32768
-  payload.thinking = {
-    "budget_tokens": 128
+  // Only add thinking for Forge API
+  if (!useCustom) {
+    payload.max_tokens = 32768;
+    payload.thinking = {
+      "budget_tokens": 128
+    };
+  } else {
+    payload.max_tokens = 4096; // Default for custom LLMs
   }
 
   const normalizedResponseFormat = normalizeResponseFormat({
@@ -312,12 +351,39 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.response_format = normalizedResponseFormat;
   }
 
-  const response = await fetch(resolveApiUrl(), {
-    method: "POST",
-    headers: {
+  // Determine API URL and headers based on provider
+  let apiUrl: string;
+  let headers: Record<string, string>;
+  
+  if (useCustom) {
+    if (customProvider === "ollama") {
+      apiUrl = `${customServerUrl || "http://localhost:11434"}/api/chat`;
+      headers = { "content-type": "application/json" };
+    } else if (customProvider === "anthropic") {
+      apiUrl = "https://api.anthropic.com/v1/messages";
+      headers = {
+        "content-type": "application/json",
+        "x-api-key": customApiKey || "",
+        "anthropic-version": "2023-06-01",
+      };
+    } else { // openai
+      apiUrl = "https://api.openai.com/v1/chat/completions";
+      headers = {
+        "content-type": "application/json",
+        "authorization": `Bearer ${customApiKey}`,
+      };
+    }
+  } else {
+    apiUrl = resolveApiUrl();
+    headers = {
       "content-type": "application/json",
-      authorization: `Bearer ${ENV.forgeApiKey}`,
-    },
+      "authorization": `Bearer ${ENV.forgeApiKey}`,
+    };
+  }
+  
+  const response = await fetch(apiUrl, {
+    method: "POST",
+    headers,
     body: JSON.stringify(payload),
   });
 

@@ -50,6 +50,13 @@
       "when": 1761440680599,
       "tag": "0006_thin_princess_powerful",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1761442419410,
+      "tag": "0007_lame_genesis",
+      "breakpoints": true
     }
   ]
 }

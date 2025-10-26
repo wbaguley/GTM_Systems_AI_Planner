@@ -4,11 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Eye, EyeOff, Key, Users, Settings2, Blocks, CreditCard } from "lucide-react";
+import { Eye, EyeOff, Key, Users, Settings2, Blocks, CreditCard, Zap } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSubscription } from "@/hooks/useSubscription";
 import { CustomizationSettings } from "@/components/CustomizationSettings";
 import { BillingSettings } from "@/components/BillingSettings";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
 
@@ -20,7 +22,32 @@ export default function Settings() {
   const [openaiKey, setOpenaiKey] = useState("");
   const [anthropicKey, setAnthropicKey] = useState("");
   const [ollamaUrl, setOllamaUrl] = useState("http://localhost:11434");
+  
+  // LLM Settings
+  const [useCustomLLM, setUseCustomLLM] = useState(false);
+  const [llmProvider, setLlmProvider] = useState<"openai" | "anthropic" | "ollama">("openai");
+  const [llmModel, setLlmModel] = useState("");
+  
+  const { data: llmSettings } = trpc.settings.getLLMSettings.useQuery();
+  
+  // Load LLM settings when available
+  useEffect(() => {
+    if (llmSettings) {
+      setUseCustomLLM(llmSettings.useCustomLLM);
+      if (llmSettings.provider) setLlmProvider(llmSettings.provider as any);
+      if (llmSettings.model) setLlmModel(llmSettings.model);
+    }
+  }, [llmSettings]);
 
+  const saveLLMSettingsMutation = trpc.settings.saveLLMSettings.useMutation({
+    onSuccess: () => {
+      toast.success("LLM settings saved successfully");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to save LLM settings");
+    },
+  });
+  
   const saveApiKeyMutation = trpc.settings.saveApiKey.useMutation({
     onSuccess: () => {
       toast.success("API key saved successfully");
@@ -60,6 +87,14 @@ export default function Settings() {
     saveApiKeyMutation.mutate({
       provider: "ollama",
       serverUrl: ollamaUrl,
+    });
+  };
+  
+  const handleSaveLLMSettings = () => {
+    saveLLMSettingsMutation.mutate({
+      useCustomLLM,
+      provider: useCustomLLM ? llmProvider : undefined,
+      model: useCustomLLM && llmModel.trim() ? llmModel : undefined,
     });
   };
 
@@ -128,6 +163,95 @@ export default function Settings() {
         </TabsContent>
 
         <TabsContent value="api-keys" className="space-y-4">
+          {/* Advanced LLM Configuration */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Zap className="h-5 w-5" />
+                LLM Configuration
+              </CardTitle>
+              <CardDescription>
+                By default, all AI features use the built-in Manus Forge API. Enable custom LLM to use your own API keys.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Use Custom LLM Toggle */}
+              <div className="flex items-center justify-between space-x-2 p-4 border rounded-lg">
+                <div className="space-y-0.5">
+                  <Label htmlFor="use-custom-llm" className="text-base font-medium">
+                    Use Custom LLM
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Enable to use your own OpenAI, Anthropic, or Ollama API keys instead of the built-in Forge API
+                  </p>
+                </div>
+                <Switch
+                  id="use-custom-llm"
+                  checked={useCustomLLM}
+                  onCheckedChange={setUseCustomLLM}
+                />
+              </div>
+              
+              {/* Custom LLM Settings (only show when enabled) */}
+              {useCustomLLM && (
+                <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
+                  <div className="space-y-2">
+                    <Label htmlFor="llm-provider">Provider</Label>
+                    <Select value={llmProvider} onValueChange={(v: any) => setLlmProvider(v)}>
+                      <SelectTrigger id="llm-provider">
+                        <SelectValue placeholder="Select provider" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="openai">OpenAI</SelectItem>
+                        <SelectItem value="anthropic">Anthropic</SelectItem>
+                        <SelectItem value="ollama">Ollama (Local)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="llm-model">Model</Label>
+                    <Input
+                      id="llm-model"
+                      value={llmModel}
+                      onChange={(e) => setLlmModel(e.target.value)}
+                      placeholder={
+                        llmProvider === "openai" ? "gpt-4o, gpt-4-turbo, gpt-3.5-turbo" :
+                        llmProvider === "anthropic" ? "claude-3-5-sonnet-20241022, claude-3-opus-20240229" :
+                        "llama2, mistral, codellama"
+                      }
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {llmProvider === "openai" && "Enter the OpenAI model name (e.g., gpt-4o)"}
+                      {llmProvider === "anthropic" && "Enter the Anthropic model name (e.g., claude-3-5-sonnet-20241022)"}
+                      {llmProvider === "ollama" && "Enter the Ollama model name (e.g., llama2)"}
+                    </p>
+                  </div>
+                  
+                  <Button
+                    onClick={handleSaveLLMSettings}
+                    disabled={saveLLMSettingsMutation.isPending}
+                    className="w-full"
+                  >
+                    {saveLLMSettingsMutation.isPending ? "Saving..." : "Save LLM Configuration"}
+                  </Button>
+                  
+                  <p className="text-xs text-muted-foreground">
+                    ⚠️ Make sure to configure your API keys below before using custom LLM
+                  </p>
+                </div>
+              )}
+              
+              {!useCustomLLM && (
+                <div className="p-4 border rounded-lg bg-green-50 dark:bg-green-950/20">
+                  <p className="text-sm text-green-800 dark:text-green-200">
+                    ✓ Using built-in Manus Forge API (Gemini 2.5 Flash) - No setup required
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>AI Provider API Keys</CardTitle>
