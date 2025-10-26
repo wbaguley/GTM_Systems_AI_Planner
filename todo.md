@@ -64,3 +64,28 @@
 ## Changes Requested
 - [x] Update Field Key naming: notesForManus → notesForAI, internal notes → internalnotes, Toolkit → toolkit
 
+
+
+## Production Readiness
+
+### Critical (Must Do Before Launch)
+- [ ] Set up Stripe account and create products/prices ($15 Essentials, $30 Pro)
+- [ ] Add Stripe API keys to environment variables
+- [ ] Configure Stripe webhook endpoint
+- [ ] Set up custom domain (app.gtmplanetary.com)
+- [ ] Test complete subscription flow (signup, payment, cancel, reactivate)
+- [x] Add Privacy Policy page
+- [x] Add Terms of Service page
+- [ ] Remove development authentication bypass (LAST STEP)
+
+### Important (Should Do)
+- [ ] Add email notifications (welcome, payment confirmations)
+- [ ] Set up error tracking (Sentry or similar)
+- [ ] Configure database backup strategy
+- [ ] Add UAT tester access mechanism
+
+### Optional (Nice to Have)
+- [ ] Add analytics integration
+- [ ] Add customer support widget
+- [ ] Create onboarding flow for new users
+

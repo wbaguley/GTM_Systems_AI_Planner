@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
 import { Check, Loader2 } from "lucide-react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { toast } from "sonner";
 
 export default function Pricing() {
@@ -168,6 +168,16 @@ export default function Pricing() {
         <div className="mt-12 text-center text-sm text-muted-foreground">
           <p>All plans are billed monthly. Cancel anytime.</p>
           <p className="mt-2">Need help choosing? <a href="mailto:support@gtmplanetary.com" className="text-primary hover:underline">Contact us</a></p>
+        </div>
+        
+        <div className="mt-16 text-center text-sm text-muted-foreground">
+          <Link href="/privacy" className="hover:text-foreground transition-colors">
+            Privacy Policy
+          </Link>
+          {" · "}
+          <Link href="/terms" className="hover:text-foreground transition-colors">
+            Terms of Service
+          </Link>
         </div>
       </div>
     </div>

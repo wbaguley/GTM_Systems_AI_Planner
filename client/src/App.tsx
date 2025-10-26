@@ -18,6 +18,8 @@ import PlaybookCanvas from "./pages/PlaybookCanvas";
 import ModuleBuilder from "./pages/ModuleBuilder";
 import FormDesigner from "./pages/FormDesigner";
 import Pricing from "./pages/Pricing";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 import DashboardLayout from "./components/DashboardLayout";
 
 function Router() {
@@ -46,6 +48,8 @@ function Router() {
         </Route>
         <Route path="/icp-assessment/:id/questionnaire" component={ICPQuestionnaire} />
         <Route path="/pricing" component={Pricing} />
+        <Route path="/privacy" component={PrivacyPolicy} />
+        <Route path="/terms" component={TermsOfService} />
         <Route path="/settings" component={Settings} />
         <Route path="/module-builder" component={ModuleBuilder} />
         <Route path="/module-builder/:id/design" component={FormDesigner} />
