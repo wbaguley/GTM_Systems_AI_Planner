@@ -20,7 +20,8 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Pencil, Trash2, GripVertical } from "lucide-react";
+import { Plus, Pencil, Trash2, GripVertical, Moon, Sun } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -124,6 +125,7 @@ function SortableFieldItem({ field, onEdit, onDelete }: {
 }
 
 export function CustomizationSettings() {
+  const { theme, toggleTheme } = useTheme();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingField, setEditingField] = useState<CustomField | null>(null);
   const [formData, setFormData] = useState<FieldFormData>({
@@ -267,7 +269,37 @@ export function CustomizationSettings() {
   };
 
   return (
-    <Card>
+    <>
+      {/* Theme Toggle Card */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Appearance</CardTitle>
+          <CardDescription>
+            Customize the look and feel of your workspace
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between space-x-2 p-4 border rounded-lg">
+            <div className="space-y-0.5">
+              <Label htmlFor="theme-toggle" className="text-base font-medium flex items-center gap-2">
+                {theme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+                Theme
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                {theme === "dark" ? "Dark mode is enabled" : "Light mode is enabled"}
+              </p>
+            </div>
+            <Switch
+              id="theme-toggle"
+              checked={theme === "dark"}
+              onCheckedChange={toggleTheme}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Custom Fields Card */}
+      <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -420,6 +452,7 @@ export function CustomizationSettings() {
         </Dialog>
       </CardContent>
     </Card>
+    </>
   );
 }
 

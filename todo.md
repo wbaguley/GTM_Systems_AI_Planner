@@ -274,3 +274,25 @@
 - [x] Ensure all imports are correct with proper TypeScript types
 - [x] Test page loads without errors
 
+
+
+## Flow Builder UX Improvements
+- [ ] Implement drag-and-drop from shape library to canvas
+- [ ] Add double-click to edit node title inline
+- [ ] Add right-click context menu on nodes
+- [ ] Add "Clone" option to context menu
+- [ ] Add "Change Node Type" option to context menu
+- [ ] Add "Change Color" option to context menu
+- [ ] Add "Change Shape" option to context menu
+- [ ] Remove or simplify the "Add New Node" modal
+- [ ] Make node creation workflow similar to ClickUp
+- [ ] Add export functionality with format options (PNG, JPEG, SVG, PDF)
+- [ ] Add export button to Flow Builder toolbar
+
+## Dark/Light Mode
+- [x] Add theme toggle to Settings page
+- [x] Enable switchable theme mode in App.tsx
+- [x] Apply theme across entire application (using existing ThemeContext)
+- [ ] Save theme preference to database per user (currently using localStorage)
+- [ ] Update Flow Builder canvas for dark mode support
+
