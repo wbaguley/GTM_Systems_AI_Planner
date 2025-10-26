@@ -105,3 +105,9 @@
 - [x] Ensure owner has full access to all features without subscription requirement
 - [x] Add GTM Planetary logo to app icon and branding (logo uploaded, user needs to set in Settings → Customization)
 
+
+
+## Branding Updates
+- [x] Hardcode GTM Planetary logo into the app (not via settings)
+- [x] Change app title to "GTM Planetary"
+
