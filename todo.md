@@ -574,3 +574,76 @@
 - [ ] Debug why drag-to-size functionality is not working
 - [ ] Test in browser to verify the issue
 
+
+
+
+## Flow Builder - Complete Rebuild Required (User Feedback)
+
+### CRITICAL ISSUES - Nothing is Working
+- [x] Fix ReactFlow event handlers - Removed invalid `onPaneMouseDown` and `onPaneMouseUp` props
+- [x] Implemented native DOM event listeners for mouse handling
+- [ ] Canvas panning needs testing with middle mouse button
+- [ ] Shape creation needs testing with drag-to-size
+- [x] Using proper native DOM events instead of invalid ReactFlow props
+
+### Middle Mouse Button Panning (User Request)
+- [ ] Make middle mouse button the default way to pan/move canvas
+- [ ] Left mouse button should only be for creating shapes/drawing
+- [ ] Right mouse button should show context menu
+- [ ] Remove any left-click panning behavior
+
+### Secondary Shape Picker Bar (ClickUp Feature)
+- [ ] When shape tool is clicked, show secondary horizontal bar at bottom
+- [ ] Bar should display all shape variations with icons:
+  - [ ] Rectangle (rounded corners option)
+  - [ ] Circle/Oval
+  - [ ] Triangle
+  - [ ] Diamond
+  - [ ] Parallelogram
+  - [ ] Hexagon
+  - [ ] Octagon
+  - [ ] Cloud
+  - [ ] Star
+  - [ ] Arrow (multiple directions)
+  - [ ] More shapes button
+- [ ] Clicking a shape in secondary bar sets it as active shape
+- [ ] Bar should have dark theme matching ClickUp
+
+### Color Palette in Bottom Toolbar (ClickUp Feature)
+- [ ] Add color palette to bottom toolbar (not in floating toolbar)
+- [ ] Show preset color circles: Red, Pink, Orange, Yellow, Green, Teal, Blue, Purple, Gray, White, Black
+- [ ] Clicking a color sets it as active color for next shape
+- [ ] Show currently selected color with white border/highlight
+
+### Freehand Drawing Tool (ClickUp Feature)
+- [ ] Implement freehand drawing when Draw tool is selected
+- [ ] Click and drag to draw smooth lines on canvas
+- [ ] Lines should persist and be saved to database
+- [ ] Support different colors for drawing
+- [ ] Support eraser tool
+
+### Fix Drag-to-Size Functionality
+- [ ] Remove invalid `onPaneMouseDown` and `onPaneMouseUp` props
+- [ ] Use native DOM event listeners on canvas element
+- [ ] OR use ReactFlow's correct event handling API
+- [ ] Implement proper mouse down → drag → mouse up flow
+- [ ] Create shape at mouse down position
+- [ ] Resize shape as mouse moves
+- [ ] Finalize shape on mouse up
+
+### Restore Canvas Panning
+- [ ] Re-enable canvas panning with middle mouse button
+- [ ] Ensure panning works smoothly
+- [ ] Add visual feedback (cursor change to grab hand when panning)
+
+### Comprehensive QA Testing Required
+- [ ] Test middle mouse button panning
+- [ ] Test left mouse button shape creation with drag-to-size
+- [ ] Test right mouse button context menu
+- [ ] Test freehand drawing tool
+- [ ] Test secondary shape picker bar
+- [ ] Test color palette selection
+- [ ] Test all keyboard shortcuts still work
+- [ ] Test shape persistence after page reload
+- [ ] Test color persistence after page reload
+

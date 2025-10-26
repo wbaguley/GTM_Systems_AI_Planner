@@ -943,7 +943,113 @@ function FlowCanvas() {
     [nodes]
   );
 
-  //  // Force cursor change on ReactFlow pane
+  //  // Add native DOM event listeners for drag-to-size
+  useEffect(() => {
+    const pane = document.querySelector('.react-flow__pane') as HTMLElement;
+    if (!pane) return;
+
+    const handleMouseDown = (e: MouseEvent) => {
+      if (!reactFlowInstance || activeTool === 'select' || activeTool === 'hand') return;
+      
+      const bounds = pane.getBoundingClientRect();
+      const position = reactFlowInstance.project({
+        x: e.clientX - bounds.left,
+        y: e.clientY - bounds.top,
+      });
+
+      setIsDragging(true);
+      setDragStart(position);
+
+      // Create temporary node
+      const newNode = {
+        id: `temp-${Date.now()}`,
+        type: 'custom',
+        position,
+        data: {
+          label: activeTool.charAt(0).toUpperCase() + activeTool.slice(1),
+          shape: activeTool === 'rectangle' ? 'rectangle' : activeTool === 'circle' ? 'circle' : 'rectangle',
+          color: '#3b82f6',
+          width: 50,
+          height: 50,
+        },
+      };
+
+      setTempNodeId(newNode.id);
+      setNodes((nds) => [...nds, newNode as Node]);
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging || !tempNodeId || !dragStart || !reactFlowInstance) return;
+
+      const bounds = pane.getBoundingClientRect();
+      const currentPos = reactFlowInstance.project({
+        x: e.clientX - bounds.left,
+        y: e.clientY - bounds.top,
+      });
+
+      const width = Math.max(50, Math.abs(currentPos.x - dragStart.x));
+      const height = Math.max(50, Math.abs(currentPos.y - dragStart.y));
+
+      setNodes((nds) =>
+        nds.map((node) =>
+          node.id === tempNodeId
+            ? {
+                ...node,
+                data: { ...node.data, width, height },
+              }
+            : node
+        )
+      );
+    };
+
+    const handleMouseUp = async () => {
+      if (!isDragging || !tempNodeId) return;
+
+      const tempNode = nodes.find((n) => n.id === tempNodeId);
+      if (!tempNode) return;
+
+      try {
+        const result = await createNodeMutation.mutateAsync({
+          playbookId: parseInt(id!),
+          label: tempNode.data.label,
+          nodeType: tempNode.data.shape || 'rectangle',
+          position: JSON.stringify(tempNode.position),
+          width: tempNode.data.width || 200,
+          height: tempNode.data.height || 100,
+          color: tempNode.data.color || '#3b82f6',
+          shape: tempNode.data.shape || 'rectangle',
+        });
+
+        setNodes((nds) =>
+          nds.map((node) =>
+            node.id === tempNodeId
+              ? { ...node, id: result.id.toString() }
+              : node
+          )
+        );
+      } catch (error) {
+        console.error('Failed to create node:', error);
+        setNodes((nds) => nds.filter((n) => n.id !== tempNodeId));
+      }
+
+      setIsDragging(false);
+      setTempNodeId(null);
+      setDragStart(null);
+      setActiveTool('select');
+    };
+
+    pane.addEventListener('mousedown', handleMouseDown);
+    pane.addEventListener('mousemove', handleMouseMove);
+    pane.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      pane.removeEventListener('mousedown', handleMouseDown);
+      pane.removeEventListener('mousemove', handleMouseMove);
+      pane.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [reactFlowInstance, activeTool, isDragging, tempNodeId, dragStart, nodes, id, createNodeMutation]);
+
+  // Force cursor change on ReactFlow pane
   useEffect(() => {
     const pane = document.querySelector('.react-flow__pane');
     if (pane) {
@@ -1245,12 +1351,10 @@ function FlowCanvas() {
           nodesConnectable={true}
           elementsSelectable={true}
           selectNodesOnDrag={false}
-          panOnDrag={activeTool === 'hand' ? [1] : [2]}
+          panOnDrag={activeTool === 'hand' ? [0, 1] : [1]}
           panOnScroll={true}
           zoomOnScroll={true}
-          onPaneMouseDown={onPaneMouseDown}
-          onPaneMouseMove={onPaneMouseMove}
-          onPaneMouseUp={onPaneMouseUp}
+
           style={{
             cursor: activeTool === 'select' ? 'default' : 
                     activeTool === 'hand' ? 'grab' : 
