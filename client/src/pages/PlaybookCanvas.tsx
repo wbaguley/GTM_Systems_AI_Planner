@@ -49,6 +49,41 @@ interface ContextMenuProps {
 
 function ContextMenu({ x, y, onClose, onAction }: ContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState({ x, y });
+
+  // Adjust position to keep menu within viewport
+  useEffect(() => {
+    if (menuRef.current) {
+      const menuRect = menuRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      let adjustedX = x;
+      let adjustedY = y;
+
+      // Check if menu goes off right edge
+      if (x + menuRect.width > viewportWidth) {
+        adjustedX = viewportWidth - menuRect.width - 10;
+      }
+
+      // Check if menu goes off bottom edge
+      if (y + menuRect.height > viewportHeight) {
+        adjustedY = viewportHeight - menuRect.height - 10;
+      }
+
+      // Check if menu goes off left edge
+      if (adjustedX < 10) {
+        adjustedX = 10;
+      }
+
+      // Check if menu goes off top edge
+      if (adjustedY < 10) {
+        adjustedY = 10;
+      }
+
+      setPosition({ x: adjustedX, y: adjustedY });
+    }
+  }, [x, y]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -97,8 +132,8 @@ function ContextMenu({ x, y, onClose, onAction }: ContextMenuProps) {
       ref={menuRef}
       style={{
         position: "fixed",
-        left: x,
-        top: y,
+        left: position.x,
+        top: position.y,
         backgroundColor: "#1f2937",
         borderRadius: "8px",
         padding: "4px",
@@ -1172,7 +1207,16 @@ function FlowCanvas() {
       </div>
 
       {/* Flow Canvas */}
-      <div ref={reactFlowWrapper} style={{ flex: 1, position: "relative" }}>
+      <div 
+        ref={reactFlowWrapper} 
+        style={{ 
+          flex: 1, 
+          position: "relative",
+          cursor: activeTool === 'select' ? 'default' : 
+                  activeTool === 'hand' ? 'grab' : 
+                  'crosshair'
+        }}
+      >
         <ReactFlow
           nodes={nodes}
           edges={edges}

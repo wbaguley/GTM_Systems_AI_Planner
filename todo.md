@@ -545,3 +545,20 @@
 - [x] On mouse up, finalize shape at dragged size and save to database
 - [x] This works for all shape tools (Rectangle, Circle, Line, Arrow, Text, Sticky Note, Draw, Image)
 
+
+
+
+## Flow Builder - Additional Bug Fixes (User Reported)
+
+### Cursor Not Changing When Tool Selected
+- [x] Change cursor to crosshair (+) when shape tools are selected (Rectangle, Circle, etc.)
+- [x] Keep cursor as default arrow for Select tool
+- [x] Keep cursor as grab hand for Hand tool
+- [x] Update cursor dynamically based on activeTool state
+
+### Context Menu Positioning
+- [x] Fix right-click context menu to not get cut off at screen edges
+- [x] Intelligently position menu to stay fully visible within viewport bounds
+- [x] Ensure all menu items are accessible regardless of where user right-clicks
+- [x] Add 10px padding from viewport edges
+
