@@ -1,0 +1,13 @@
+{
+  "query": "SELECT COUNT(*) as count FROM gtm_frameworks;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3LAnvSXMR8umuBe.f9fcf9d06f8e --database SV7ecyBz2sHt9m9NeRGRPS --execute SELECT COUNT(*) as count FROM gtm_frameworks;",
+  "rows": [
+    {
+      "count": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "count\n0\n",
+  "stderr": "",
+  "execution_time_ms": 195
+}

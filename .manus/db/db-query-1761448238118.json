@@ -1,0 +1,22 @@
+{
+  "query": "SELECT * FROM icp_assessments LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3LAnvSXMR8umuBe.f9fcf9d06f8e --database SV7ecyBz2sHt9m9NeRGRPS --execute SELECT * FROM icp_assessments LIMIT 5;",
+  "rows": [
+    {
+      "id": "1",
+      "user_id": "default-owner-openid",
+      "company_name": "test",
+      "industry": "Financial Services",
+      "company_size": "11-50",
+      "revenue": "$1M - $5M",
+      "status": "draft",
+      "completed_at": "NULL",
+      "created_at": "2025-10-26 03:09:16",
+      "updated_at": "2025-10-26 03:09:16"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tuser_id\tcompany_name\tindustry\tcompany_size\trevenue\tstatus\tcompleted_at\tcreated_at\tupdated_at\n1\tdefault-owner-openid\ttest\tFinancial Services\t11-50\t$1M - $5M\tdraft\tNULL\t2025-10-26 03:09:16\t2025-10-26 03:09:16\n",
+  "stderr": "",
+  "execution_time_ms": 51
+}

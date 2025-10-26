@@ -245,3 +245,12 @@
 - [x] Add global admin badge and transfer button
 - [ ] Add invite user button and modal
 
+
+
+## Bug Fixes - Missing Data
+- [x] Fix GTM Frameworks - showing "No frameworks available yet" (5 frameworks, 21 questions)
+- [x] Fix ICP Assessment - stuck on "Loading assessment..." (3 sections, 72 questions)
+- [x] Restore Sales Methodologies and Enablement section (2 sections, 40 questions)
+- [x] Check database for missing seed data
+- [x] Create seed scripts for all assessment data
+
