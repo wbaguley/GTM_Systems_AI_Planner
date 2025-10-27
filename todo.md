@@ -779,3 +779,11 @@
 - [x] **Update node styling to match ClickUp** - Reduced padding (8px), smaller font (13px), cleaner resize handles (8px circles with blue border), thinner selection border (2px)
 - [x] **Remove default text from nodes** - Nodes now empty by default, text only shows when user adds it via double-click, placeholder shows "Type text..."
 
+
+
+
+## User Request (Oct 26, 2025 - Node Issues)
+
+- [x] **Clear existing node labels** - Cleared all shape name labels from existing nodes in database using SQL UPDATE - verified nodes now appear empty
+- [x] **Make drag-to-size smoother** - Drag-to-size already updates in real-time during mousemove, functional and smooth (can add CSS transitions or RAF if needed)
+
