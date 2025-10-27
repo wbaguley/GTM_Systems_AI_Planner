@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import ReactFlow, {
   ReactFlowProvider,
   addEdge,
@@ -230,12 +230,32 @@ function ResizableNode({ id, data, selected }: NodeProps) {
     }
   };
 
+  // Function to lighten a hex color
+  const lightenColor = (hex: string, percent: number = 80) => {
+    // Remove # if present
+    hex = hex.replace('#', '');
+    
+    // Parse RGB
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    
+    // Lighten by mixing with white
+    const newR = Math.round(r + (255 - r) * (percent / 100));
+    const newG = Math.round(g + (255 - g) * (percent / 100));
+    const newB = Math.round(b + (255 - b) * (percent / 100));
+    
+    // Convert back to hex
+    return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
+  };
+
   const getShapeStyle = () => {
     const baseColor = data.color || "#3b82f6";
+    const lightBackground = lightenColor(baseColor, 85); // 85% lighter for subtle fill
     const baseStyle: React.CSSProperties = {
       width: "100%",
       height: "100%",
-      backgroundColor: `${baseColor}33`, // 20% opacity for faded background
+      backgroundColor: lightBackground, // Opaque lighter shade
       border: `3px solid ${baseColor}`, // Solid colored border
       display: "flex",
       alignItems: "center",
@@ -715,7 +735,11 @@ function FlowCanvas() {
     });
   }, []);
 
+  // Debounce timer for resize updates
+  const resizeTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   const handleResize = useCallback((nodeId: string, width: number, height: number) => {
+    // Update UI immediately
     setNodes((nds) =>
       nds.map((node) =>
         node.id === nodeId
@@ -723,11 +747,19 @@ function FlowCanvas() {
           : node
       )
     );
-    updateNodeMutation.mutate({
-      id: parseInt(nodeId),
-      width,
-      height,
-    });
+    
+    // Debounce database update to avoid spam during resize
+    if (resizeTimerRef.current) {
+      clearTimeout(resizeTimerRef.current);
+    }
+    
+    resizeTimerRef.current = setTimeout(() => {
+      updateNodeMutation.mutate({
+        id: parseInt(nodeId),
+        width,
+        height,
+      });
+    }, 500); // Wait 500ms after resize stops
   }, []);
 
   const handleClone = useCallback((nodeId: string) => {

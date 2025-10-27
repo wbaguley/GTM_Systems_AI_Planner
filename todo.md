@@ -796,3 +796,11 @@
 - [x] **Fix 129 errors showing in UI** - Verified playbook_drawings table exists, error was likely intermittent from initial page load
 - [x] **Add Delete/Backspace key to delete nodes** - Added keyboard shortcuts for Delete and Backspace keys to delete selected node, prevents browser back navigation
 
+
+
+
+## User Request (Oct 26, 2025 - Node Background & Resize Errors)
+
+- [x] **Fix node background transparency** - Added lightenColor function to create opaque lighter shade (85% lighter) instead of transparent background, no more see-through to canvas dots
+- [x] **Fix errors during node resize** - Added 500ms debounce to handleResize to prevent database update spam during continuous resize events, UI updates immediately but DB update waits until resize stops
+
