@@ -238,8 +238,8 @@ function ResizableNode({ id, data, selected }: NodeProps) {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      padding: "12px",
-      fontSize: "14px",
+      padding: "8px",
+      fontSize: "13px",
       fontWeight: 500,
       color: "#fff",
       cursor: "pointer",
@@ -307,6 +307,17 @@ function ResizableNode({ id, data, selected }: NodeProps) {
         isVisible={selected}
         minWidth={100}
         minHeight={60}
+        handleStyle={{
+          width: '8px',
+          height: '8px',
+          borderRadius: '50%',
+          backgroundColor: '#fff',
+          border: '2px solid #3b82f6',
+        }}
+        lineStyle={{
+          borderWidth: '2px',
+          borderColor: '#3b82f6',
+        }}
         onResize={(event, params) => {
           if (data.onResize) {
             data.onResize(id, params.width, params.height);
@@ -338,25 +349,27 @@ function ResizableNode({ id, data, selected }: NodeProps) {
             onChange={(e) => setLabel(e.target.value)}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
+            placeholder="Type text..."
             style={{
               background: "transparent",
               border: "none",
               outline: "none",
-              color: "#fff",
-              fontSize: "14px",
+              color: data.shape === "text" ? "#e2e8f0" : "#fff",
+              fontSize: "13px",
               fontWeight: 500,
               textAlign: "center",
               width: "100%",
               transform: data.shape === "parallelogram" ? "skewX(20deg)" : "none",
             }}
           />
-        ) : (
+        ) : label && label.trim() ? (
           <span style={{ 
-            transform: data.shape === "parallelogram" ? "skewX(20deg)" : "none" 
+            transform: data.shape === "parallelogram" ? "skewX(20deg)" : "none",
+            fontSize: "13px",
           }}>
             {label}
           </span>
-        )}
+        ) : null}
       </div>
       <Handle type="source" position={Position.Bottom} />
 

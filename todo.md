@@ -771,3 +771,11 @@
 - [ ] **Connection preview** - Show temporary line from source node to cursor when using Line/Arrow tools
 - [ ] **Image upload loading state** - Add spinner/loading indicator during image upload process
 
+
+
+
+## User Request (Oct 26, 2025 - Node Styling)
+
+- [x] **Update node styling to match ClickUp** - Reduced padding (8px), smaller font (13px), cleaner resize handles (8px circles with blue border), thinner selection border (2px)
+- [x] **Remove default text from nodes** - Nodes now empty by default, text only shows when user adds it via double-click, placeholder shows "Type text..."
+
