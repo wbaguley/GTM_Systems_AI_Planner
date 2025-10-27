@@ -804,3 +804,11 @@
 - [x] **Fix node background transparency** - Added lightenColor function to create opaque lighter shade (85% lighter) instead of transparent background, no more see-through to canvas dots
 - [x] **Fix errors during node resize** - Added 500ms debounce to handleResize to prevent database update spam during continuous resize events, UI updates immediately but DB update waits until resize stops
 
+
+
+
+## User Request (Oct 26, 2025 - Color Picker & Node Size)
+
+- [x] **Remove HexColorPicker popup from floating toolbar** - Removed HexColorPicker component and showColorPicker state, replaced with read-only color indicator, users now change colors via color palette toolbar only
+- [x] **Reduce minimum node size** - Reduced minWidth and minHeight from 100x60 to 20x20 in NodeResizer, allows very small nodes like ClickUp
+

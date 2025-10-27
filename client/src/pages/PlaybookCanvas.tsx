@@ -206,7 +206,6 @@ function ContextMenu({ x, y, onClose, onAction }: ContextMenuProps) {
 
 // Custom Resizable Node Component with ClickUp-style features
 function ResizableNode({ id, data, selected }: NodeProps) {
-  const [showColorPicker, setShowColorPicker] = useState(false);
   const [showShapePicker, setShowShapePicker] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [label, setLabel] = useState(data.label || "");
@@ -327,8 +326,8 @@ function ResizableNode({ id, data, selected }: NodeProps) {
     >
       <NodeResizer
         isVisible={selected}
-        minWidth={100}
-        minHeight={60}
+        minWidth={20}
+        minHeight={20}
         handleStyle={{
           width: '8px',
           height: '8px',
@@ -495,39 +494,18 @@ function ResizableNode({ id, data, selected }: NodeProps) {
             )}
           </div>
 
-          {/* Color Picker */}
-          <div style={{ position: "relative" }}>
-            <button
-              onClick={() => setShowColorPicker(!showColorPicker)}
-              style={{
-                background: data.color || "#3b82f6",
-                border: "2px solid #fff",
-                borderRadius: "4px",
-                width: "32px",
-                height: "32px",
-                cursor: "pointer",
-              }}
-            />
-            {showColorPicker && (
-              <div
-                style={{
-                  position: "absolute",
-                  bottom: 45,
-                  left: 0,
-                  zIndex: 10001,
-                }}
-              >
-                <HexColorPicker
-                  color={data.color || "#3b82f6"}
-                  onChange={(color) => {
-                    if (data.onColorChange) {
-                      data.onColorChange(id, color);
-                    }
-                  }}
-                />
-              </div>
-            )}
-          </div>
+          {/* Color Indicator (read-only, use color palette to change) */}
+          <div
+            style={{
+              background: data.color || "#3b82f6",
+              border: "2px solid #fff",
+              borderRadius: "4px",
+              width: "32px",
+              height: "32px",
+              cursor: "default",
+            }}
+            title="Use color palette to change color"
+          />
 
           {/* Clone Button */}
           <button
