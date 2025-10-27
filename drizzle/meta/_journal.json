@@ -85,6 +85,13 @@
       "when": 1761526321571,
       "tag": "0011_fast_red_skull",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "5",
+      "when": 1761529435558,
+      "tag": "0012_furry_puff_adder",
+      "breakpoints": true
     }
   ]
 }

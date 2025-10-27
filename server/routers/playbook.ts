@@ -90,6 +90,8 @@ export const playbookRouter = router({
         height: z.number().optional(),
         color: z.string().optional(),
         shape: z.string().optional(),
+        fontFamily: z.string().optional(),
+        fontColor: z.string().optional(),
       })
     )
     .mutation(async ({ input }: { input: any }) => {
@@ -118,6 +120,8 @@ export const playbookRouter = router({
         height: z.number().optional(),
         color: z.string().optional(),
         shape: z.string().optional(),
+        fontFamily: z.string().optional(),
+        fontColor: z.string().optional(),
       })
     )
     .mutation(async ({ input }: { input: any }) => {

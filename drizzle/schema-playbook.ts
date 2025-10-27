@@ -42,6 +42,8 @@ export const playbookNodes = mysqlTable("playbook_nodes", {
   height: int("height").default(100), // Node height in pixels
   color: varchar("color", { length: 50 }).default("#3b82f6"), // Node background color
   shape: varchar("shape", { length: 50 }).default("rectangle"), // Node shape: rectangle, circle, diamond, etc.
+  fontFamily: varchar("font_family", { length: 100 }).default("Montserrat"), // Font family for text
+  fontColor: varchar("font_color", { length: 50 }).default("#ffffff"), // Text color
   data: json("data"), // Additional node-specific data
   duration: varchar("duration", { length: 100 }), // For steps: estimated time (e.g., "2 hours", "3 days")
   owner: varchar("owner", { length: 255 }), // Who is responsible for this step

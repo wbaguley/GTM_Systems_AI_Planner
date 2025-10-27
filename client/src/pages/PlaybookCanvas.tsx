@@ -375,9 +375,10 @@ function ResizableNode({ id, data, selected }: NodeProps) {
               background: "transparent",
               border: "none",
               outline: "none",
-              color: data.shape === "text" ? "#e2e8f0" : "#fff",
+              color: data.fontColor || (data.shape === "text" ? "#e2e8f0" : "#fff"),
               fontSize: "13px",
               fontWeight: 500,
+              fontFamily: data.fontFamily || "Montserrat",
               textAlign: "center",
               width: "100%",
               transform: data.shape === "parallelogram" ? "skewX(20deg)" : "none",
@@ -387,6 +388,8 @@ function ResizableNode({ id, data, selected }: NodeProps) {
           <span style={{ 
             transform: data.shape === "parallelogram" ? "skewX(20deg)" : "none",
             fontSize: "13px",
+            fontFamily: data.fontFamily || "Montserrat",
+            color: data.fontColor || (data.shape === "text" ? "#e2e8f0" : "#fff"),
           }}>
             {label}
           </span>
@@ -494,7 +497,52 @@ function ResizableNode({ id, data, selected }: NodeProps) {
             )}
           </div>
 
-          {/* Color Indicator (read-only, use color palette to change) */}
+          {/* Font Family Dropdown */}
+          <div style={{ position: "relative" }}>
+            <select
+              value={data.fontFamily || "Montserrat"}
+              onChange={(e) => {
+                if (data.onFontFamilyChange) {
+                  data.onFontFamilyChange(id, e.target.value);
+                }
+              }}
+              style={{
+                background: "#374151",
+                border: "none",
+                borderRadius: "4px",
+                padding: "6px 8px",
+                color: "#fff",
+                cursor: "pointer",
+                fontSize: "13px",
+                fontFamily: data.fontFamily || "Montserrat",
+              }}
+              title="Font Family"
+            >
+              <option value="Montserrat">Montserrat</option>
+              <option value="Arial">Arial</option>
+              <option value="Times New Roman">Times New Roman</option>
+              <option value="Courier New">Courier New</option>
+              <option value="Georgia">Georgia</option>
+              <option value="Verdana">Verdana</option>
+              <option value="Comic Sans MS">Comic Sans MS</option>
+              <option value="Impact">Impact</option>
+            </select>
+          </div>
+
+          {/* Font Color Picker */}
+          <div
+            style={{
+              background: data.fontColor || "#ffffff",
+              border: "2px solid #fff",
+              borderRadius: "4px",
+              width: "32px",
+              height: "32px",
+              cursor: "default",
+            }}
+            title="Font color (use color palette to change)"
+          />
+
+          {/* Node Color Indicator (read-only, use color palette to change) */}
           <div
             style={{
               background: data.color || "#3b82f6",
@@ -504,7 +552,7 @@ function ResizableNode({ id, data, selected }: NodeProps) {
               height: "32px",
               cursor: "default",
             }}
-            title="Use color palette to change color"
+            title="Node color (use color palette to change)"
           />
 
           {/* Clone Button */}
@@ -649,9 +697,13 @@ function FlowCanvas() {
             shape: node.shape || "rectangle",
             width: node.width || 200,
             height: node.height || 100,
+            fontFamily: node.fontFamily || "Montserrat",
+            fontColor: node.fontColor || "#ffffff",
             onLabelChange: handleLabelChange,
             onColorChange: handleColorChange,
             onShapeChange: handleShapeChange,
+            onFontFamilyChange: handleFontFamilyChange,
+            onFontColorChange: handleFontColorChange,
             onResize: handleResize,
             onClone: handleClone,
             onDelete: handleDelete,
@@ -710,6 +762,34 @@ function FlowCanvas() {
     updateNodeMutation.mutate({
       id: parseInt(nodeId),
       shape: newShape,
+    });
+  }, []);
+
+  const handleFontFamilyChange = useCallback((nodeId: string, newFontFamily: string) => {
+    setNodes((nds) =>
+      nds.map((node) =>
+        node.id === nodeId
+          ? { ...node, data: { ...node.data, fontFamily: newFontFamily } }
+          : node
+      )
+    );
+    updateNodeMutation.mutate({
+      id: parseInt(nodeId),
+      fontFamily: newFontFamily,
+    });
+  }, []);
+
+  const handleFontColorChange = useCallback((nodeId: string, newFontColor: string) => {
+    setNodes((nds) =>
+      nds.map((node) =>
+        node.id === nodeId
+          ? { ...node, data: { ...node.data, fontColor: newFontColor } }
+          : node
+      )
+    );
+    updateNodeMutation.mutate({
+      id: parseInt(nodeId),
+      fontColor: newFontColor,
     });
   }, []);
 
@@ -816,9 +896,13 @@ function FlowCanvas() {
           shape: "rectangle",
           width: 200,
           height: 100,
+          fontFamily: "Montserrat",
+          fontColor: "#ffffff",
           onLabelChange: handleLabelChange,
           onColorChange: handleColorChange,
           onShapeChange: handleShapeChange,
+          onFontFamilyChange: handleFontFamilyChange,
+          onFontColorChange: handleFontColorChange,
           onResize: handleResize,
           onClone: handleClone,
           onDelete: handleDelete,
@@ -882,9 +966,13 @@ function FlowCanvas() {
           shape: config.shape,
           width: 50,
           height: 50,
+          fontFamily: "Montserrat",
+          fontColor: "#ffffff",
           onLabelChange: handleLabelChange,
           onColorChange: handleColorChange,
           onShapeChange: handleShapeChange,
+          onFontFamilyChange: handleFontFamilyChange,
+          onFontColorChange: handleFontColorChange,
           onResize: handleResize,
           onClone: handleClone,
           onDelete: handleDelete,
@@ -1090,9 +1178,13 @@ function FlowCanvas() {
           color: '#3b82f6',
           width: 50,
           height: 50,
+          fontFamily: "Montserrat",
+          fontColor: "#ffffff",
           onLabelChange: handleLabelChange,
           onColorChange: handleColorChange,
           onShapeChange: handleShapeChange,
+          onFontFamilyChange: handleFontFamilyChange,
+          onFontColorChange: handleFontColorChange,
           onResize: handleResize,
           onClone: handleClone,
           onDelete: handleDelete,
@@ -1953,13 +2045,18 @@ function FlowCanvas() {
         ].map(({ color, label }) => (
           <button
             key={color}
-            onClick={() => {
-              // If a node is selected, change its color
-              if (selectedNodeId) {
-                handleColorChange(selectedNodeId, color);
+            onClick={(e) => {
+              // If Shift is held, change font color; otherwise change node/draw color
+              if (e.shiftKey && selectedNodeId) {
+                handleFontColorChange(selectedNodeId, color);
+              } else {
+                // If a node is selected, change its color
+                if (selectedNodeId) {
+                  handleColorChange(selectedNodeId, color);
+                }
+                // Also update draw color for drawing tool
+                setDrawColor(color);
               }
-              // Also update draw color for drawing tool
-              setDrawColor(color);
             }}
             style={{
               width: '32px',

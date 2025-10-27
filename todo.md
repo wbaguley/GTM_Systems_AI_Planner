@@ -812,3 +812,16 @@
 - [x] **Remove HexColorPicker popup from floating toolbar** - Removed HexColorPicker component and showColorPicker state, replaced with read-only color indicator, users now change colors via color palette toolbar only
 - [x] **Reduce minimum node size** - Reduced minWidth and minHeight from 100x60 to 20x20 in NodeResizer, allows very small nodes like ClickUp
 
+
+
+
+## User Request (Oct 26, 2025 - Font Customization)
+
+- [x] **Add font family selector** - Added font family dropdown to floating toolbar with 8 font options (Montserrat, Arial, Times New Roman, Courier New, Georgia, Verdana, Comic Sans MS, Impact)
+- [x] **Add font color selector** - Added font color indicator to floating toolbar, users can change font color by holding Shift and clicking color palette
+- [x] **Add font controls to floating toolbar** - Font family dropdown and font color indicator added to floating toolbar between shape picker and node color indicator
+- [x] **Database schema updated** - Added fontFamily (varchar 50, default 'Montserrat') and fontColor (varchar 20, default '#ffffff') fields to playbook_nodes table
+- [x] **Font handlers implemented** - Created handleFontFamilyChange and handleFontColorChange functions, connected to floating toolbar UI
+- [x] **Font styling applied** - ResizableNode component applies data.fontFamily and data.fontColor to both input and span elements
+- [x] **tRPC schema updated** - Added fontFamily and fontColor to createNode and updateNode mutation schemas
+
