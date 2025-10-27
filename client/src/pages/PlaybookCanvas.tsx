@@ -231,10 +231,12 @@ function ResizableNode({ id, data, selected }: NodeProps) {
   };
 
   const getShapeStyle = () => {
+    const baseColor = data.color || "#3b82f6";
     const baseStyle: React.CSSProperties = {
       width: "100%",
       height: "100%",
-      backgroundColor: data.color || "#3b82f6",
+      backgroundColor: `${baseColor}33`, // 20% opacity for faded background
+      border: `3px solid ${baseColor}`, // Solid colored border
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -1178,6 +1180,15 @@ function FlowCanvas() {
     const handleKeyPress = (e: KeyboardEvent) => {
       // Only trigger if not typing in an input
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      // Handle Delete/Backspace for selected nodes
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (selectedNodeId) {
+          handleDelete(selectedNodeId);
+          e.preventDefault(); // Prevent browser back navigation on Backspace
+        }
         return;
       }
 

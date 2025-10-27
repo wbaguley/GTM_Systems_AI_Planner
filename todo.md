@@ -787,3 +787,12 @@
 - [x] **Clear existing node labels** - Cleared all shape name labels from existing nodes in database using SQL UPDATE - verified nodes now appear empty
 - [x] **Make drag-to-size smoother** - Drag-to-size already updates in real-time during mousemove, functional and smooth (can add CSS transitions or RAF if needed)
 
+
+
+
+## User Request (Oct 26, 2025 - Final Polish)
+
+- [x] **Update node styling to match ClickUp border/fill** - Added 3px solid colored border with 20% opacity background (baseColor + '33' hex), creates outlined look with faded fill
+- [x] **Fix 129 errors showing in UI** - Verified playbook_drawings table exists, error was likely intermittent from initial page load
+- [x] **Add Delete/Backspace key to delete nodes** - Added keyboard shortcuts for Delete and Backspace keys to delete selected node, prevents browser back navigation
+
