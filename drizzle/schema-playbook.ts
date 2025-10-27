@@ -112,9 +112,22 @@ export const playbookNodeExecutions = mysqlTable("playbook_node_executions", {
     .onUpdateNow(),
 });
 
+// Playbook Drawings - Freehand drawings on the canvas
+export const playbookDrawings = mysqlTable("playbook_drawings", {
+  id: int("id").primaryKey().autoincrement(),
+  playbookId: int("playbook_id")
+    .notNull()
+    .references(() => playbooks.id, { onDelete: "cascade" }),
+  path: json("path").notNull(), // Array of {x, y} coordinates
+  color: varchar("color", { length: 50 }).notNull().default("#3b82f6"),
+  width: int("width").notNull().default(3), // Stroke width
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export type Playbook = typeof playbooks.$inferSelect;
 export type PlaybookNode = typeof playbookNodes.$inferSelect;
 export type PlaybookConnection = typeof playbookConnections.$inferSelect;
 export type PlaybookExecution = typeof playbookExecutions.$inferSelect;
 export type PlaybookNodeExecution = typeof playbookNodeExecutions.$inferSelect;
+export type PlaybookDrawing = typeof playbookDrawings.$inferSelect;
 

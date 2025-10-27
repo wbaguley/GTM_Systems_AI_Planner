@@ -761,3 +761,13 @@
 
 - [x] **Revert Flow Builder node colors** - Changed back to original colors (blue, red, green, orange, yellow, purple, pink, cyan, gray, dark) while keeping brand colors for rest of app
 
+
+
+
+## Flow Builder Enhancements (Option 2 - Priority)
+
+- [x] **Drawing database persistence** - Created playbook_drawings table, added tRPC mutations (create/get/delete), save drawings on completion, load from database on page load, delete from database when erased
+- [ ] **Undo/Redo functionality** - Implement history stack, keyboard shortcuts (Ctrl+Z, Ctrl+Y), toolbar buttons
+- [ ] **Connection preview** - Show temporary line from source node to cursor when using Line/Arrow tools
+- [ ] **Image upload loading state** - Add spinner/loading indicator during image upload process
+

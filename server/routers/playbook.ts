@@ -165,6 +165,42 @@ export const playbookRouter = router({
       return getCompletePlaybook(input.id, ctx.user.id);
     }),
 
+  // Drawing operations
+  createDrawing: protectedProcedure
+    .input(
+      z.object({
+        playbookId: z.number(),
+        path: z.array(z.object({ x: z.number(), y: z.number() })),
+        color: z.string(),
+        width: z.number(),
+      })
+    )
+    .mutation(async ({ input }: { input: any }) => {
+      const { db } = await import("../db");
+      const { playbookDrawings } = await import("../../drizzle/schema-playbook");
+      const [drawing] = await db.insert(playbookDrawings).values(input).$returningId();
+      return drawing;
+    }),
+
+  getDrawings: protectedProcedure
+    .input(z.object({ playbookId: z.number() }))
+    .query(async ({ input }: { input: { playbookId: number } }) => {
+      const { db } = await import("../db");
+      const { playbookDrawings } = await import("../../drizzle/schema-playbook");
+      const { eq } = await import("drizzle-orm");
+      return db.select().from(playbookDrawings).where(eq(playbookDrawings.playbookId, input.playbookId));
+    }),
+
+  deleteDrawing: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }: { input: { id: number } }) => {
+      const { db } = await import("../db");
+      const { playbookDrawings } = await import("../../drizzle/schema-playbook");
+      const { eq } = await import("drizzle-orm");
+      await db.delete(playbookDrawings).where(eq(playbookDrawings.id, input.id));
+      return { success: true };
+    }),
+
   // AI Generation
   generateWithAI: protectedProcedure
     .input(

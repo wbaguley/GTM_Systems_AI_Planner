@@ -566,7 +566,8 @@ function FlowCanvas() {
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentPath, setCurrentPath] = useState<{ x: number; y: number }[]>([]);
   const [drawings, setDrawings] = useState<Array<{
-    id: string;
+    id: string; // Local ID (drawing-timestamp)
+    dbId?: number; // Database ID
     path: { x: number; y: number }[];
     color: string;
     width: number;
@@ -592,6 +593,28 @@ function FlowCanvas() {
   const createNodeMutation = trpc.playbook.createNode.useMutation();
   const deleteNodeMutation = trpc.playbook.deleteNode.useMutation();
   const uploadImageMutation = trpc.upload.uploadImage.useMutation();
+  
+  // Drawing mutations
+  const createDrawingMutation = trpc.playbook.createDrawing.useMutation();
+  const { data: dbDrawings } = trpc.playbook.getDrawings.useQuery(
+    { playbookId: parseInt(id || "0") },
+    { enabled: !!id }
+  );
+  const deleteDrawingMutation = trpc.playbook.deleteDrawing.useMutation();
+
+  // Load drawings from database
+  React.useEffect(() => {
+    if (dbDrawings) {
+      const loadedDrawings = dbDrawings.map((dbDrawing: any) => ({
+        id: `drawing-${dbDrawing.id}`,
+        dbId: dbDrawing.id,
+        path: dbDrawing.path,
+        color: dbDrawing.color,
+        width: dbDrawing.width,
+      }));
+      setDrawings(loadedDrawings);
+    }
+  }, [dbDrawings]);
 
   // Load playbook data
   React.useEffect(() => {
@@ -1234,7 +1257,22 @@ function FlowCanvas() {
       setIsDrawing(false);
       setCurrentPath([]);
       
-      // TODO: Save to database
+      // Save to database
+      createDrawingMutation.mutate({
+        playbookId: parseInt(id || "0"),
+        path: currentPath,
+        color: drawColor,
+        width: drawWidth,
+      }, {
+        onSuccess: (data) => {
+          // Update drawing with database ID
+          setDrawings(prev => prev.map(d => 
+            d.id === newDrawing.id ? { ...d, dbId: data.id } : d
+          ));
+          console.log('Drawing saved to database:', data);
+        },
+      });
+      
       console.log('Drawing completed:', newDrawing);
     };
 
@@ -1269,21 +1307,21 @@ function FlowCanvas() {
       // Check if click is near any path (within 10px tolerance)
       const tolerance = 10;
       
-      setDrawings(prev => {
-        const remainingDrawings = prev.filter(drawing => {
-          // Check if any point in the path is near the click
-          const isNearPath = drawing.path.some(point => {
+      setDrawings((prev) => {
+        const remainingDrawings = prev.filter((d) => {
+          const isNearPath = d.path.some((point) => {
             const distance = Math.sqrt(
               Math.pow(point.x - clickX, 2) + Math.pow(point.y - clickY, 2)
             );
-            return distance < tolerance;
+            return distance <= tolerance;
           });
           
-          if (isNearPath) {
-            console.log('Erased drawing:', drawing.id);
-            // TODO: Delete from database
+          // Delete from database if near path
+          if (isNearPath && d.dbId) {
+            deleteDrawingMutation.mutate({ id: d.dbId });
+            console.log('Drawing deleted from database:', d.dbId);
           }
-          
+        
           return !isNearPath;
         });
         
